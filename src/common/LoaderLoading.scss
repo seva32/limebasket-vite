@@ -1,0 +1,65 @@
+@keyframes wiggleWiggle {
+  20%,
+  100% {
+    transform: translate(
+      0,
+      2px
+    ); /* stay on the baseline for most of the animation duration */
+  }
+
+  0% {
+    transform: translate(0, 0px); /* hop up */
+  }
+
+  10% {
+    transform: translate(0, 2px); /* return to baseline */
+  }
+}
+
+#loading-ani path {
+  transform: translateY(2px);
+  animation-name: wiggleWiggle;
+  animation-duration: 2.5s;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
+}
+
+#A {
+  animation-delay: 0s;
+}
+
+#B {
+  animation-delay: 0.1s;
+}
+
+#C {
+  animation-delay: 0.15s;
+}
+
+#D {
+  animation-delay: 0.2s;
+}
+
+#E {
+  animation-delay: 0.25s;
+}
+
+#F {
+  animation-delay: 0.3s;
+}
+
+#G {
+  animation-delay: 0.35s;
+}
+
+#H {
+  animation-delay: 0.4s;
+}
+
+#I {
+  animation-delay: 0.45s;
+}
+
+#J {
+  animation-delay: 0.5s;
+}
