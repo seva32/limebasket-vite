@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import loadable from "@loadable/component";
+import { ErrorBoundary } from "../common/ErrorBoundary";
 
 import { ScrollToTop, Layout } from "../common";
 
@@ -122,38 +123,40 @@ export const routes: RouteProp[] = [
 
 export default function appRouter() {
   return (
-    <Layout>
-      <ScrollToTop />
-      <Routes>
-        {/* {routes.map((route: RouteProp, key: any) => (
+    <ErrorBoundary fallback={<p>Something went wrong</p>}>
+      <Layout>
+        <ScrollToTop />
+        <Routes>
+          {/* {routes.map((route: RouteProp, key: any) => (
           <Route
             key={key}
             element={<UniversalComponent {...route} />}
             {...route}
           />
         ))} */}
-        <Route path="/" element={<Home />} />
-        <Route path="/signin" element={<Signin />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/signout" element={<Signout />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/store" element={<Store />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-        <Route
-          path="/reset-password/:token/:email"
-          element={<ChangePassword />}
-        />
-        <Route path="/payment" element={<Payment />} />
-        <Route path="/products/:id" element={<Products />} />
-        <Route path="/product/:id" element={<Product />} />
-        <Route path="/cart/:id" element={<Cart />} />
-        <Route path="/order/:id" element={<Order />} />
-        <Route path="/place-order" element={<PlaceOrder />} />
-        <Route path="/shipping" element={<Shipping />} />
-        <Route path="/terms" element={<Terms />} />
-        <Route path="home" element={<Navigate to="/" replace />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </Layout>
+          <Route path="/" element={<Home />} />
+          <Route path="/signin" element={<Signin />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/signout" element={<Signout />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/store" element={<Store />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route
+            path="/reset-password/:token/:email"
+            element={<ChangePassword />}
+          />
+          <Route path="/payment" element={<Payment />} />
+          <Route path="/products/:id" element={<Products />} />
+          <Route path="/product/:id" element={<Product />} />
+          <Route path="/cart/:id" element={<Cart />} />
+          <Route path="/order/:id" element={<Order />} />
+          <Route path="/place-order" element={<PlaceOrder />} />
+          <Route path="/shipping" element={<Shipping />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="home" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Layout>
+    </ErrorBoundary>
   );
 }

@@ -21,10 +21,10 @@ import {
 } from "../users/userDataTypes";
 import getMessage from "../../../utils/misc/getErrorMessage";
 
-const url = "localhost:4939/lime-api";
+const url = "http://localhost:4939/lime-api";
 
 const instance = axios.create({
-  baseURL: "http://" + url,
+  baseURL: url,
   withCredentials: true,
   timeout: 10000,
 });
