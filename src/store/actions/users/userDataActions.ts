@@ -13,7 +13,7 @@ export const getCurrentUser = () => ({
 
 export const getUserData = () => async (dispatch: any) => {
   try {
-    const response = await axios.get("/users", {
+    const response = await axios.get("http://localhost:4939/lime-api/users", {
       headers: authHeader(),
     });
     dispatch({ type: GET_USER_DATA, payload: response.data });

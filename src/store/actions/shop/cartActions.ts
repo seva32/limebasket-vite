@@ -9,7 +9,7 @@ import {
 } from "./shopActionTypes/cartActionTypes";
 import authHeader from "../../../utils/misc/auth-header";
 
-const url = "localhost:3000";
+const url = "http://localhost:4939/lime-api";
 
 export const addToCart =
   (productId: any, qty: any, promo: any, callback: any) =>
@@ -17,7 +17,7 @@ export const addToCart =
     const cookies = new Cookies();
     try {
       const { data } = await axios.get(
-        `${url}/lime-api/shop/products/${productId}`,
+        `${url}/shop/products/${productId}`,
         {
           headers: authHeader(),
         }
