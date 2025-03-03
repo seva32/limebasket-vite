@@ -21,7 +21,7 @@ import {
 } from "./shopActionTypes/orderActionTypes";
 import authHeader from "../../../utils/misc/auth-header";
 
-const baseURL = 'localhost:3000';
+const baseURL = 'http://localhost:4939/lime-api';
 
 export const createOrder =
   (order: any) => async (dispatch: any) => {
@@ -30,7 +30,7 @@ export const createOrder =
       const {
         data: { data: newOrder },
       } = await axios.post(
-        `${baseURL}/lime-api/shop/orders`,
+        `${baseURL}/shop/orders`,
         order,
         {
           headers: authHeader(),
@@ -49,7 +49,7 @@ export const listMyOrders = () => async (dispatch: any) => {
   try {
     dispatch({ type: MY_ORDER_LIST_REQUEST });
     const { data } = await axios.get(
-      `${baseURL}/lime-api/shop/orders/user`,
+      `${baseURL}/shop/orders/user`,
       {
         headers: authHeader(),
       }
@@ -67,7 +67,7 @@ export const listOrders = () => async (dispatch: any) => {
   try {
     dispatch({ type: ORDER_LIST_REQUEST });
     const { data } = await axios.get(
-      `${baseURL}/lime-api/shop/orders`,
+      `${baseURL}/shop/orders`,
       {
         headers: authHeader(),
       }
@@ -85,7 +85,7 @@ export const detailsOrder =
       const { data } = await axios.get(
         `${
           baseURL
-        }/lime-api/shop/orders/${orderId}`,
+        }/shop/orders/${orderId}`,
         {
           headers: authHeader(),
         }
@@ -105,7 +105,7 @@ export const payOrder =
       dispatch({ type: ORDER_PAY_REQUEST, payload: paymentResult });
       const { data } = await axios.put(
         // eslint-disable-next-line no-underscore-dangle
-        `${baseURL}/lime-api/shop/orders/${
+        `${baseURL}/shop/orders/${
           order._id
         }/pay`,
         paymentResult,
@@ -127,7 +127,7 @@ export const deleteOrder =
     try {
       dispatch({ type: ORDER_DELETE_REQUEST, payload: orderId });
       const { data } = await axios.delete(
-        `${baseURL}/lime-api/shop/orders/${orderId}`,
+        `${baseURL}/shop/orders/${orderId}`,
         {
           headers: authHeader(),
         }
