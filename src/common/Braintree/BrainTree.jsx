@@ -7,12 +7,12 @@ import brainhostedFields from "braintree-web/hosted-fields";
 import axios from "axios";
 import "./Braintree.scss";
 
-const serverURL = process.env.SERVER_URL || 'api.localhost';
+const serverURL = process.env.VITE_SERVER_URL;
 const baseURL =
-  process.env.NODE_ENV === "production"
+  process.env.NODE_ENV !== "development"
     ? `https://${serverURL}`
-    : `http://${serverURL}`;
-const authorization = process.env.BRAINTREE_AUTHORIZATION;
+    : 'http://localhost:4939';
+const authorization = process.env.VITE_BRAINTREE_AUTHORIZATION;
 
 function Braintree({ onButtonReady }) {
   // const [loading, setLoading] = React.useState(true);
