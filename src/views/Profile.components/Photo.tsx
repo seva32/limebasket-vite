@@ -7,6 +7,8 @@ interface PhotoProps {
   avatar?: string;
 }
 
+const url = "http://localhost:4939/lime-api";
+
 function Photo({ avatar }: PhotoProps): JSX.Element {
   const [image, setImage] = React.useState("");
   const [uploading, setUploading] = React.useState(false);
@@ -25,7 +27,7 @@ function Photo({ avatar }: PhotoProps): JSX.Element {
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       require("../../utils/misc/auth-header").default;
     const defaultOptions = {
-      headers: authHeader(),
+      headers: authHeader,
     };
     axiosinstance.current = axios.create(defaultOptions);
 
@@ -41,7 +43,7 @@ function Photo({ avatar }: PhotoProps): JSX.Element {
     bodyFormData.append("image", file);
     setUploading(true);
     axiosinstance?.current
-      ?.post("/shop/uploads/profile", bodyFormData)
+      ?.post(`${url}/shop/uploads/profile`, bodyFormData)
       .then((response) => {
         const imagePath = response.data.filePath || "No image available";
         setImage(imagePath);

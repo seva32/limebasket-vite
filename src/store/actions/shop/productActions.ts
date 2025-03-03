@@ -20,7 +20,7 @@ import {
 } from "./shopActionTypes/productActionTypes";
 import authHeader from "../../../utils/misc/auth-header";
 
-const url = "localhost:3000";
+const url = "http://localhost:4939/lime-api";
 
 export const listProducts =
   (category = "", searchKeyword = "", sortOrder = "") =>
