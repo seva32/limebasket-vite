@@ -6,12 +6,12 @@ import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import axios from "axios";
 
-const serverURL = process.env.SERVER_URL || 'api.localhost';
+const serverURL = process.env.VITE_SERVER_URL || 'localhost:4939';
 const baseURL =
-  process.env.NODE_ENV === "production"
+  process.env.NODE_ENV !== "development"
     ? `https://${serverURL}`
     : `http://${serverURL}`;
-const clientId = process.env.PAYPAL_CLIENT;
+const clientId = process.env.VITE_PAYPAL_CLIENT;
 
 const PaypalButton = ({
   onButtonReady,

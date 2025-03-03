@@ -11,9 +11,14 @@ export const getCurrentUser = () => ({
   payload: JSON.parse(localStorage.getItem("user") || "") || {},
 });
 
+const url =
+  process.env.NODE_ENV === "development"
+    ? "http://localhost:4939/lime-api"
+    : "https://lime-api.sfantini.us/lime-api";
+
 export const getUserData = () => async (dispatch: any) => {
   try {
-    const response = await axios.get("http://localhost:4939/lime-api/users", {
+    const response = await axios.get(`${url}/users`, {
       headers: authHeader(),
     });
     dispatch({ type: GET_USER_DATA, payload: response.data });

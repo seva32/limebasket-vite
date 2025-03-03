@@ -21,39 +21,34 @@ import {
 } from "./shopActionTypes/orderActionTypes";
 import authHeader from "../../../utils/misc/auth-header";
 
-const baseURL = 'http://localhost:4939/lime-api';
+const baseURL =
+  process.env.NODE_ENV === "development"
+    ? "http://localhost:4939/lime-api"
+    : "https://lime-api.sfantini.us/lime-api";
 
-export const createOrder =
-  (order: any) => async (dispatch: any) => {
-    try {
-      dispatch({ type: ORDER_CREATE_REQUEST, payload: order });
-      const {
-        data: { data: newOrder },
-      } = await axios.post(
-        `${baseURL}/shop/orders`,
-        order,
-        {
-          headers: authHeader(),
-        }
-      );
-      dispatch({ type: ORDER_CREATE_SUCCESS, payload: newOrder });
-    } catch (error: any) {
-      dispatch({
-        type: ORDER_CREATE_FAIL,
-        payload: error.response?.data?.message,
-      });
-    }
-  };
+export const createOrder = (order: any) => async (dispatch: any) => {
+  try {
+    dispatch({ type: ORDER_CREATE_REQUEST, payload: order });
+    const {
+      data: { data: newOrder },
+    } = await axios.post(`${baseURL}/shop/orders`, order, {
+      headers: authHeader(),
+    });
+    dispatch({ type: ORDER_CREATE_SUCCESS, payload: newOrder });
+  } catch (error: any) {
+    dispatch({
+      type: ORDER_CREATE_FAIL,
+      payload: error.response?.data?.message,
+    });
+  }
+};
 
 export const listMyOrders = () => async (dispatch: any) => {
   try {
     dispatch({ type: MY_ORDER_LIST_REQUEST });
-    const { data } = await axios.get(
-      `${baseURL}/shop/orders/user`,
-      {
-        headers: authHeader(),
-      }
-    );
+    const { data } = await axios.get(`${baseURL}/shop/orders/user`, {
+      headers: authHeader(),
+    });
     dispatch({ type: MY_ORDER_LIST_SUCCESS, payload: data });
   } catch (error: any) {
     dispatch({
@@ -66,38 +61,29 @@ export const listMyOrders = () => async (dispatch: any) => {
 export const listOrders = () => async (dispatch: any) => {
   try {
     dispatch({ type: ORDER_LIST_REQUEST });
-    const { data } = await axios.get(
-      `${baseURL}/shop/orders`,
-      {
-        headers: authHeader(),
-      }
-    );
+    const { data } = await axios.get(`${baseURL}/shop/orders`, {
+      headers: authHeader(),
+    });
     dispatch({ type: ORDER_LIST_SUCCESS, payload: data });
   } catch (error: any) {
     dispatch({ type: ORDER_LIST_FAIL, payload: error.response.data.message });
   }
 };
 
-export const detailsOrder =
-  (orderId: any) => async (dispatch: any) => {
-    try {
-      dispatch({ type: ORDER_DETAILS_REQUEST, payload: orderId });
-      const { data } = await axios.get(
-        `${
-          baseURL
-        }/shop/orders/${orderId}`,
-        {
-          headers: authHeader(),
-        }
-      );
-      dispatch({ type: ORDER_DETAILS_SUCCESS, payload: data });
-    } catch (error: any) {
-      dispatch({
-        type: ORDER_DETAILS_FAIL,
-        payload: error.response?.data?.message,
-      });
-    }
-  };
+export const detailsOrder = (orderId: any) => async (dispatch: any) => {
+  try {
+    dispatch({ type: ORDER_DETAILS_REQUEST, payload: orderId });
+    const { data } = await axios.get(`${baseURL}/shop/orders/${orderId}`, {
+      headers: authHeader(),
+    });
+    dispatch({ type: ORDER_DETAILS_SUCCESS, payload: data });
+  } catch (error: any) {
+    dispatch({
+      type: ORDER_DETAILS_FAIL,
+      payload: error.response?.data?.message,
+    });
+  }
+};
 
 export const payOrder =
   (order: any, paymentResult: any) => async (dispatch: any) => {
@@ -105,9 +91,7 @@ export const payOrder =
       dispatch({ type: ORDER_PAY_REQUEST, payload: paymentResult });
       const { data } = await axios.put(
         // eslint-disable-next-line no-underscore-dangle
-        `${baseURL}/shop/orders/${
-          order._id
-        }/pay`,
+        `${baseURL}/shop/orders/${order._id}/pay`,
         paymentResult,
         {
           headers: authHeader(),
@@ -122,21 +106,17 @@ export const payOrder =
     }
   };
 
-export const deleteOrder =
-  (orderId: any) => async (dispatch: any) => {
-    try {
-      dispatch({ type: ORDER_DELETE_REQUEST, payload: orderId });
-      const { data } = await axios.delete(
-        `${baseURL}/shop/orders/${orderId}`,
-        {
-          headers: authHeader(),
-        }
-      );
-      dispatch({ type: ORDER_DELETE_SUCCESS, payload: data });
-    } catch (error: any) {
-      dispatch({
-        type: ORDER_DELETE_FAIL,
-        payload: error.response?.data?.message,
-      });
-    }
-  };
+export const deleteOrder = (orderId: any) => async (dispatch: any) => {
+  try {
+    dispatch({ type: ORDER_DELETE_REQUEST, payload: orderId });
+    const { data } = await axios.delete(`${baseURL}/shop/orders/${orderId}`, {
+      headers: authHeader(),
+    });
+    dispatch({ type: ORDER_DELETE_SUCCESS, payload: data });
+  } catch (error: any) {
+    dispatch({
+      type: ORDER_DELETE_FAIL,
+      payload: error.response?.data?.message,
+    });
+  }
+};
