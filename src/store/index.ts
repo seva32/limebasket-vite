@@ -37,8 +37,8 @@ const configureStorePersisted = () => {
   const userStorage = localStorage.getItem("user");
   const user = userStorage ? JSON.parse(userStorage) : null;
 
-  const preloadedState = window.REDUX_DATA;
-  let initialState;
+  const preloadedState = window.REDUX_DATA || {};
+  let initialState = {};
 
   if (user !== null && user !== undefined && user) {
     const expired =

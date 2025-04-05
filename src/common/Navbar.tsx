@@ -110,7 +110,7 @@ const Navbar = ({
             <div className="w-1/3 relative">
               {showMenu && <MobileMenu dark={dark} />}
               {!showMenu && logged && (
-                <div className="w-auto min-w-48p flex justify-start">
+                <div className="w-auto min-w-48p flex justify-start" title="Account">
                   <Link to="/profile">
                     <img
                       src={
@@ -124,26 +124,29 @@ const Navbar = ({
                   </Link>
                 </div>
               )}
-              {!showMenu && !logged && (
-                <div className="w-auto min-w-48p flex justify-start">
-                  <Link to="/signin">
-                    <img
-                      src={
-                        dark
-                          ? "https://res.cloudinary.com/seva32/image/upload/v1605538134/signinDark_gyhken.svg"
-                          : "https://res.cloudinary.com/seva32/image/upload/v1605538134/singinWhite_pjysrb.svg"
-                      }
-                      alt="signin"
-                      className="w-48p h-48p"
-                    />
-                  </Link>
-                </div>
-              )}
+              {!showMenu &&
+                !logged &&
+                window.location.pathname !== "/signin" && (
+                  <div className="w-auto min-w-48p flex justify-start" title="Sign in">
+                    <Link to="/signin">
+                      <img
+                        src={
+                          dark
+                            ? "https://res.cloudinary.com/seva32/image/upload/v1605538134/signinDark_gyhken.svg"
+                            : "https://res.cloudinary.com/seva32/image/upload/v1605538134/singinWhite_pjysrb.svg"
+                        }
+                        alt="signin"
+                        className="w-48p h-48p"
+                      />
+                    </Link>
+                  </div>
+                )}
             </div>
 
             {logged && isAmdin && (
               <div
                 className={`${showMenu ? "w-full flex justify-end" : "w-1/3"}`}
+                title="Admin system"
               >
                 <Link to="/store">
                   <img
@@ -162,7 +165,7 @@ const Navbar = ({
 
           {/* middle items */}
           <li className="w-1/3 mx-auto flex">
-            <div className="relative w-full flex justify-center items-center">
+            <div className="relative w-full flex justify-center items-center" title="Lime Basket">
               <Link to="/">
                 <img
                   src="https://res.cloudinary.com/seva32/image/upload/v1605180993/logoRaw_njbho2.svg"
@@ -178,7 +181,7 @@ const Navbar = ({
             <div className="w-1/3 flex" />
           ) : (
             <li className="w-1/3 flex flex-no-wrap justify-end items-center">
-              <button type="button" onClick={() => setShowModal(!showModal)}>
+              <button type="button" onClick={() => setShowModal(!showModal)} title="Search">
                 <img
                   src={
                     dark
@@ -189,7 +192,7 @@ const Navbar = ({
                   className="w-48p h-48p"
                 />
               </button>
-              <div className="w-1/3 flex justify-end ml-6">
+              <div className="w-1/3 flex justify-end ml-6" title="Cart">
                 <Link to="/cart">
                   <img
                     src={

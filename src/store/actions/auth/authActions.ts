@@ -48,7 +48,8 @@ const instance = axios.create({
 // }
 
 export const signup =
-  (formProps: any, callback: any) => async (dispatch: any) => {
+  (formProps: any, callback: (result: boolean) => void) =>
+  async (dispatch: any) => {
     try {
       const response = await instance.post("/auth/signup", formProps, {
         headers: {},
@@ -66,10 +67,11 @@ export const signup =
           startTime: dateNow,
         },
       });
-      return callback();
+      callback(true);
     } catch (e: any) {
       const message = e?.response?.data?.message || ("Email in use" as string);
       dispatch({ type: AUTH_ERROR_SIGNUP, payload: message });
+      callback(false);
     }
   };
 
@@ -120,9 +122,9 @@ export const signout = (callback: any) => async (dispatch: any) => {
   return callback(); // callback for token expire timeout countdownHOC
 };
 
-// eslint-disable-next-line consistent-return
 export const signin =
-  (formProps: any, callback: any) => async (dispatch: any) => {
+  (formProps: any, callback: (result: boolean) => void) =>
+  async (dispatch: any) => {
     try {
       const response = await instance.post("/auth/signin", formProps, {
         headers: {},
@@ -140,49 +142,13 @@ export const signin =
           startTime: dateNow,
         },
       });
-      return callback();
+      callback(true);
     } catch (err: unknown) {
       const message = getMessage(err as Error | AxiosError);
       dispatch({ type: AUTH_ERROR_SIGNIN, payload: message });
+      callback(false);
     }
   };
-
-// export const signin = (formProps, callback) => async (dispatch) => {
-//   fetch(`${apiUrl}/auth/signin`, {
-//     method: 'POST', // or 'PUT'
-//     body: JSON.stringify(formProps), // data can be `string` or {object}!
-//     headers: {
-//       'Content-Type': 'application/json',
-//       Accept: 'application/json',
-//     },
-//     credentials: 'same-origin',
-//     maxRedirects: 100,
-//   })
-//     .then((res) => res.json())
-//     .catch((_error) =>
-//       // eslint-disable-next-line implicit-arrow-linebreak
-//       dispatch({
-//         type: AUTH_ERROR_SIGNIN,
-//         payload: 'Invalid login credentials',
-//       }),
-//     ) // eslint-disable-line
-//     .then((response) => {
-//       const dateNow = Date.now();
-//       dispatch({ type: AUTH_USER, payload: response.accessToken });
-//       dispatch({
-//         type: AUTH_EXPIRY_TOKEN,
-//         payload: {
-//           expiryToken: response.expiryToken,
-//           startTime: dateNow,
-//         },
-//       });
-//       localStorage.setItem(
-//         'user',
-//         JSON.stringify({ ...response, startTime: dateNow }),
-//       );
-//       return callback();
-//     });
-// };
 
 export const refreshToken = (callback: any) => async (dispatch: any) => {
   try {
@@ -229,7 +195,7 @@ export const resfreshTokenRestartTimeout = () => ({
 
 // formProps == email, reset es solamente para el envio de mail/link para change
 export const resetPassword =
-  (formProps: any, callback: any) => async (dispatch: any) => {
+  (formProps: any, callback: (result:boolean) => void) => async (dispatch: any) => {
     try {
       const response = await instance.post("/auth/reset-password", formProps, {
         headers: {},
@@ -240,7 +206,7 @@ export const resetPassword =
           payload: formProps,
         });
       }
-      return callback();
+      callback(true);
     } catch (e: any) {
       console.warn("e ", e);
       dispatch({
@@ -248,6 +214,7 @@ export const resetPassword =
         // res.status(404).send({ message: 'User Email Not found.' });
         payload: e.response?.data?.message,
       });
+      callback(false);
     }
   };
 

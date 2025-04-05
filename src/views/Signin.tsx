@@ -8,29 +8,42 @@ import {
   useAppSelector as useSelector,
   useAppDispatch as useDispatch,
 } from "../store/hooks";
+import {
+  AUTH_ERROR_SIGNIN,
+  AUTH_ERROR_SIGNUP,
+} from "../store/actions/auth/authActionTypes";
 
 import * as actions from "../store/actions";
 import { Policies, Navbar, Button, Head, Alert } from "../common";
 import { GoogleLogin } from "../common/GoogleButton/index.jsx";
 
-// const clientId = process.env["GOOGLE_CLIENT_ID"];
-const clientId =
-  "337014600692-84c6cvbn4370f08b6cdp8jkc2ndjln84.apps.googleusercontent.com";
+const clientId = process.env["VITE_GOOGLE_CLIENT_ID"];
 
 function Signin() {
   const [showButton, toggleShow] = React.useState(true);
+
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
 
   const auth = useSelector((state) => state.auth);
-  const { authenticated } = auth;
+  const { authenticated, errorMessageSignIn } = auth;
+
+  React.useEffect(() => {
+    if (errorMessageSignIn) {
+      dispatch({ type: AUTH_ERROR_SIGNIN, payload: "" });
+      dispatch({ type: AUTH_ERROR_SIGNUP, payload: "" });
+    }
+  }, []);
 
   // prettier-disable
   const renderGoogleAuth = () =>
-    ((showButton || auth.errorMessageSignIn) && ( // eslint-disable-line
+    ((showButton || errorMessageSignIn) && (
       <GoogleLogin
-        onSuccess={(res: any) => {
+        onSuccess={(res: {
+          googleId: string;
+          profileObj: { email: string };
+        }) => {
           if (res.googleId && res.profileObj) {
             toggleShow(false);
             dispatch(
@@ -56,7 +69,6 @@ function Signin() {
         onFailure={() => (
           <Alert title="Failed!" content="Try again or use another method" />
         )}
-        // eslint-disable-next-line max-len
         clientId={clientId || ""}
       >
         Google
@@ -79,7 +91,17 @@ function Signin() {
     }),
     onSubmit: (values, { setStatus, resetForm }) => {
       dispatch(
-        actions.signin(values, () => {
+        actions.signin(values, (result) => {
+          resetForm();
+          if (!result) {
+            setStatus({
+              success: false,
+            });
+            return;
+          }
+          setStatus({
+            success: true,
+          });
           const redirect = location.search
             ? location.search.split("=")[1]
             : "/";
@@ -90,10 +112,6 @@ function Signin() {
           }
         })
       );
-      resetForm({});
-      setStatus({
-        success: true,
-      });
     },
   });
 
@@ -127,6 +145,13 @@ function Signin() {
               <div className="w-full font-subtitle-semibold pb-10">
                 Returning customers
               </div>
+              {errorMessageSignIn && (
+                <Alert
+                  title="Failed!"
+                  content={`You couldnt signin. ${errorMessageSignIn}`}
+                  bell
+                />
+              )}
               <form onSubmit={formik.handleSubmit} className="w-full font-body">
                 <div className="w-full flex h-40p bg-honeydew justify-center items-center mb-10">
                   <label className="flex items-center w-full" htmlFor="email">
@@ -229,14 +254,6 @@ function Signin() {
               </div>
             </div>
           </div>
-
-          {auth.errorMessageSignIn && (
-            <Alert
-              title="Failed!"
-              content={`You couldnt signin. ${auth.errorMessageSignIn}`}
-              bell
-            />
-          )}
 
           <div className="mt-4 mb-20">
             <Link to="/reset-password" className="">

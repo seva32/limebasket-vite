@@ -3,7 +3,7 @@ import react from "@vitejs/plugin-react";
 import commonjs from "vite-plugin-commonjs";
 import dotenv from "dotenv";
 
-dotenv.config({ path: ".env.development" });
+dotenv.config({ path: ".env" });
 
 export default defineConfig({
   plugins: [react(), commonjs()],
@@ -11,6 +11,8 @@ export default defineConfig({
     port: 3000,
   },
   define: {
-    "process.env": process.env,
+    "process.env": Object.fromEntries(
+      Object.entries(process.env).filter(([key]) => key.startsWith("VITE_"))
+    ),
   },
 });
