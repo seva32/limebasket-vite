@@ -11,4 +11,5 @@ module.exports = {
   conwaypink: '#ff00de',
   transparent: 'transparent',
   grey: '#504669',
+  red: '#970000',
 };

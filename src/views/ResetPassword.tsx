@@ -42,14 +42,14 @@ function ResetPassword() {
     }),
     onSubmit: (values, { setStatus, resetForm }) => {
       dispatch(
-        actions.resetPassword(values, () => {
-          setShowModal(true);
+        actions.resetPassword(values, (result) => {
+          if (result) setShowModal(true);
+          resetForm({});
+          setStatus({
+            success: result,
+          });
         })
       );
-      resetForm({});
-      setStatus({
-        success: true,
-      });
     },
   });
 
@@ -83,6 +83,7 @@ function ResetPassword() {
               <div className="w-full font-subtitle-semibold pb-10">
                 We&apos;ll send you an email asking you to confirm the change.
               </div>
+              {error && <Alert title="Failed!" content={`${error}`} bell />}
               <form onSubmit={formik.handleSubmit} className="w-full font-body">
                 <div className="w-full flex h-40p bg-honeydew justify-center items-center mb-10">
                   <label className="flex items-center w-full" htmlFor="email">
@@ -115,9 +116,6 @@ function ResetPassword() {
                 </div>
               </form>
             </div>
-          </div>
-          <div>
-            {error && <Alert title="Failed!" content={`${error}`} bell />}
           </div>
         </div>
       </div>

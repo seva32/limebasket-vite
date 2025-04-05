@@ -8,11 +8,15 @@ import {
   useAppSelector as useSelector,
   useAppDispatch as useDispatch,
 } from "../store/hooks";
+import {
+  AUTH_ERROR_SIGNIN,
+  AUTH_ERROR_SIGNUP,
+} from "../store/actions/auth/authActionTypes";
 
 import { GoogleLogin } from "../common/GoogleButton";
 import { Policies, Navbar, Button, Alert, Head } from "../common";
 import * as actions from "../store/actions";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 type ValueForm = {
   password: string;
@@ -22,20 +26,23 @@ type ValueForm = {
   roles?: string[];
 };
 
-// const clientId = process.env.GOOGLE_CLIENT_ID;
-const clientId =
-  "337014600692-84c6cvbn4370f08b6cdp8jkc2ndjln84.apps.googleusercontent.com";
+const clientId = process.env["VITE_GOOGLE_CLIENT_ID"];
 
 function Signup() {
   const [showButton, toggleShow] = React.useState(true);
   const navigate = useNavigate();
-  const location = useLocation();
   const dispatch = useDispatch();
 
   const auth = useSelector((state) => state.auth);
-  const { authenticated, errorMessageSignIn: error } = auth;
+  const { errorMessageSignUp: error } = auth;
 
-  // prettier-disable
+  React.useEffect(() => {
+    if (error) {
+      dispatch({ type: AUTH_ERROR_SIGNIN, payload: "" });
+      dispatch({ type: AUTH_ERROR_SIGNUP, payload: "" });
+    }
+  }, []);
+
   const renderGoogleAuth = () =>
     ((showButton || error) && ( // eslint-disable-line
       <GoogleLogin
@@ -63,7 +70,6 @@ function Signup() {
         onFailure={() => (
           <Alert title="Failed!" content="Try again or use another method" />
         )}
-        // eslint-disable-next-line max-len
         clientId={clientId || ""}
       >
         Google
@@ -101,12 +107,12 @@ function Signup() {
         values = { ...values, roles: ["admin", "user"] }; // eslint-disable-line
       }
       dispatch(
-        actions.signup(omit(values, ["repeatpassword"]), () => {
-          navigate("/");
+        actions.signup(omit(values, ["repeatpassword"]), (result) => {
+          if (result) navigate("/");
+          resetForm({});
+          setStatus({ success: result });
         })
       );
-      resetForm({});
-      setStatus({ success: true });
     },
   });
 
@@ -135,11 +141,18 @@ function Signup() {
 
           {/* forms */}
           <div className="w-full flex flex-no-wrap flex-col md:flex-row justify-center items-center text-space mb-10">
-            {/* signin */}
+            {/* signup */}
             <div className="w-1/2 flex flex-col justify-center items-center bg-white rounded-lg shadow-md mx-auto px-4 py-8">
               <div className="w-full font-subtitle-semibold pb-10">
                 Welcome new customer!
               </div>
+              {error && (
+                <Alert
+                  title="Failed!"
+                  content={`You couldn't signup. ${error}`}
+                  bell
+                />
+              )}
               <form onSubmit={formik.handleSubmit} className="w-full font-body">
                 <div className="w-full flex h-40p bg-honeydew justify-center items-center mb-10">
                   <label className="flex items-center w-full" htmlFor="email">
@@ -248,7 +261,7 @@ function Signup() {
 
                 <div className="mb-10">
                   <Button size="md" padding="p-0" submit noArrow>
-                    <div className="font-button">Sign In</div>
+                    <div className="font-button">Sign Up</div>
                   </Button>
                 </div>
               </form>
@@ -270,14 +283,6 @@ function Signup() {
               </div>
             </div>
           </div>
-
-          {error && (
-            <Alert
-              title="Failed!"
-              content={`You couldnt signup. ${error}`}
-              bell
-            />
-          )}
         </div>
       </div>
     </>
