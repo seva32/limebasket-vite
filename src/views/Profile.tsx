@@ -64,16 +64,16 @@ function Profile() {
                     <li className="relative block">
                       <button
                         type="button"
-                        className="flex w-full items-center justify-between py-4 relative rounded font-subtitle text-space"
+                        className="flex items-center justify-start py-4 relative rounded font-subtitle text-space"
                         onClick={() => handleClickNav("Dashboard", "Profile")}
                       >
-                        <div className="w-1/4">
+                        <div className="max-w-30p">
                           <img
                             src="https://res.cloudinary.com/seva32/image/upload/v1605538134/userDark_bufw9v.svg"
                             alt="user account"
                           />
                         </div>
-                        <span className="pl-3 w-3/4">User</span>
+                        <span className="pl-12">User</span>
                       </button>
                       <ul className="relative">
                         <li className="block text-center md:text-left">
@@ -174,7 +174,7 @@ function Profile() {
                             alt="shipping panel"
                           />
                         </div>
-                        <span className="pl-3 w-3/4">Shippings</span>
+                        <span className="pl-7 w-3/4">Shippings</span>
                       </button>
                       <ul className="relative">
                         <li className="block text-center md:text-left">
@@ -248,7 +248,7 @@ function Profile() {
                   )}
                   {subTitle === "Photo" && (
                     <Photo
-                      avatar={user?.image || users.userData?.image || ""}
+                      avatar={users.userData?.image || ""}
                     />
                   )}
                   {subTitle === "Account" && (
