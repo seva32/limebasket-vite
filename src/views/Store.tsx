@@ -55,7 +55,7 @@ function Store() {
                       className="flex items-center my-0 mx-2 p-3 relative rounded font-subtitle text-space"
                       onClick={() => handleClickNav("Products", "Products")}
                     >
-                      <div className="w-1/4">
+                      <div className="w-1/4" style={{maxWidth: "40px"}}>
                         <svg
                           width="70%"
                           height="70%"
@@ -102,7 +102,7 @@ function Store() {
                       className="flex items-center my-0 mx-2 p-3 relative rounded font-subtitle text-space"
                       onClick={() => handleClickNav("Orders", "Orders")}
                     >
-                      <div className="w-1/4">
+                      <div className="w-1/4" style={{maxWidth: "40px"}}>
                         <svg
                           height="80%"
                           version="1.1"

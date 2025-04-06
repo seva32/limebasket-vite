@@ -86,6 +86,7 @@ export const detailsProduct = (productId: any) => async (dispatch: any) => {
       headers: authHeader(),
     });
     dispatch({ type: PRODUCT_DETAILS_SUCCESS, payload: data });
+    return data;
   } catch (error: any) {
     dispatch({ type: PRODUCT_DETAILS_FAIL, payload: error.message });
   }
