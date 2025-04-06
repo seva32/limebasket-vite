@@ -25,11 +25,11 @@ const initialStateList = { loading: null, products: [], error: "" };
 function productListReducer(state = initialStateList, action: any) {
   switch (action.type) {
     case PRODUCT_LIST_REQUEST:
-      return { ...state, loading: true, products: [] };
+      return { ...state, loading: true, products: [], error: "" };
     case PRODUCT_LIST_SUCCESS:
-      return { ...state, loading: false, products: action.payload };
+      return { ...state, loading: false, products: action.payload, error: "" };
     case PRODUCT_LIST_FAIL:
-      return { ...state, loading: false, error: action.payload };
+      return { ...state, error: action.payload };
     default:
       return state;
   }

@@ -1,5 +1,5 @@
 /* eslint-disable no-underscore-dangle */
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import {
   PRODUCT_LIST_REQUEST,
   PRODUCT_LIST_SUCCESS,
@@ -30,17 +30,22 @@ export const listProducts =
   async (dispatch: (action: { type: string; payload?: any }) => void) => {
     try {
       dispatch({ type: PRODUCT_LIST_REQUEST });
+
       const { data } = await axios.get(
         `${url}/shop/products?category=${category}&searchKeyword=${searchKeyword}&sortOrder=${sortOrder}`,
         {
           headers: authHeader(),
         }
       );
+
       dispatch({ type: PRODUCT_LIST_SUCCESS, payload: data });
-      dispatch({ type: PRODUCT_LIST_FAIL, payload: "" });
+
+      return data;
     } catch (error: unknown) {
+      const err = error as AxiosError;
       console.log("ProductList action err: ", error);
-      dispatch({ type: PRODUCT_LIST_FAIL, payload: error.message });
+      dispatch({ type: PRODUCT_LIST_FAIL, payload: err.message });
+      throw error;
     }
   };
 
