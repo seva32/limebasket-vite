@@ -9,6 +9,12 @@ import useMediaQuery from "../utils/hooks/useMediaQuery";
 
 import MobileMenu from "./MobileMenu";
 import Input from "./Input";
+import { useAppSelector } from "../store/hooks";
+
+const url =
+  process.env.NODE_ENV === "development"
+    ? "http://localhost:4939/lime-api"
+    : "https://lime-api.sfantini.us/lime-api";
 
 interface NavbarProps {
   logged: boolean;
@@ -29,6 +35,7 @@ const Navbar = ({
   const [showModal, setShowModal] = React.useState(false);
   const [isAmdin, setIsAmdin] = React.useState(false);
   const [shouldNavigate, setShouldNavigate] = React.useState(false);
+  const users = useAppSelector((state) => state.users);
 
   // const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -63,6 +70,8 @@ const Navbar = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPortrait, setShowMenu, logged, shouldNavigate]);
+
+  const profileImage = users?.userData?.image;
 
   return (
     <>
@@ -110,16 +119,21 @@ const Navbar = ({
             <div className="w-1/3 relative">
               {showMenu && <MobileMenu dark={dark} />}
               {!showMenu && logged && (
-                <div className="w-auto min-w-48p flex justify-start" title="Account">
+                <div
+                  className="w-auto min-w-48p flex justify-start"
+                  title="Account"
+                >
                   <Link to="/profile">
                     <img
                       src={
-                        dark
+                        profileImage
+                          ? `${url}${profileImage}`
+                          : dark
                           ? "https://res.cloudinary.com/seva32/image/upload/v1605538134/userDark_bufw9v.svg"
                           : "https://res.cloudinary.com/seva32/image/upload/v1605538134/userWhite_cdsffg.svg"
                       }
                       alt="account"
-                      className="w-48p h-48p"
+                      className={`${profileImage ? "rounded-full" : ""} w-48p h-48p`}
                     />
                   </Link>
                 </div>
@@ -127,7 +141,10 @@ const Navbar = ({
               {!showMenu &&
                 !logged &&
                 window.location.pathname !== "/signin" && (
-                  <div className="w-auto min-w-48p flex justify-start" title="Sign in">
+                  <div
+                    className="w-auto min-w-48p flex justify-start"
+                    title="Sign in"
+                  >
                     <Link to="/signin">
                       <img
                         src={
@@ -165,7 +182,10 @@ const Navbar = ({
 
           {/* middle items */}
           <li className="w-1/3 mx-auto flex">
-            <div className="relative w-full flex justify-center items-center" title="Lime Basket">
+            <div
+              className="relative w-full flex justify-center items-center"
+              title="Lime Basket"
+            >
               <Link to="/">
                 <img
                   src="https://res.cloudinary.com/seva32/image/upload/v1605180993/logoRaw_njbho2.svg"
@@ -181,7 +201,11 @@ const Navbar = ({
             <div className="w-1/3 flex" />
           ) : (
             <li className="w-1/3 flex flex-no-wrap justify-end items-center">
-              <button type="button" onClick={() => setShowModal(!showModal)} title="Search">
+              <button
+                type="button"
+                onClick={() => setShowModal(!showModal)}
+                title="Search"
+              >
                 <img
                   src={
                     dark

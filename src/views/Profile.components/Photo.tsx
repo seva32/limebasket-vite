@@ -28,7 +28,6 @@ function Photo({ avatar }: PhotoProps): React.ReactElement {
     setErrorMessage("");
   };
 
-
   useEffect(() => {
     // Initialize axios instance with headers
     const defaultOptions = {
@@ -81,7 +80,7 @@ function Photo({ avatar }: PhotoProps): React.ReactElement {
         {image && image !== "" && image !== "Not available" ? (
           <img
             alt="Profile"
-            src={image}
+            src={`${url}${image}`}
             className="inline w-200p h-200p object-cover text-center"
             onError={() => setImage("Not available")}
           />
@@ -106,11 +105,11 @@ function Photo({ avatar }: PhotoProps): React.ReactElement {
       </span>
       <div className="w-full flex flex-col justify-center items-center mt-2 mb-2 md:mt-4 p-2 md:p-4">
         <input
-          defaultValue={image.split("-")[image.split("-").length - 1]}
+          defaultValue={image ? image.match(/[^-]+$/)[0] : ""}
           type="text"
           name="image"
           id="image"
-          className="mb-2 md:mb-4"
+          className="mb-2 md:mb-4 w-full text-center"
           readOnly
         />
         <Button padding="p-0" noArrow>
