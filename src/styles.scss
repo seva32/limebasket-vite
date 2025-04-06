@@ -23,7 +23,8 @@ body {
 }
 
 html,
-body {
+body,
+#root {
   height: 100%; /* needed for container min-height */
 }
 

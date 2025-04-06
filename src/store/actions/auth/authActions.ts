@@ -20,6 +20,7 @@ import {
   GET_CURRENT_USER,
 } from "../users/userDataTypes";
 import getMessage from "../../../utils/misc/getErrorMessage";
+import { Dispatch, AnyAction } from "redux";
 
 const url =
   process.env.NODE_ENV === "development"
@@ -49,7 +50,7 @@ const instance = axios.create({
 
 export const signup =
   (formProps: any, callback: (result: boolean) => void) =>
-  async (dispatch: any) => {
+  async (dispatch: Dispatch<AnyAction>) => {
     try {
       const response = await instance.post("/auth/signup", formProps, {
         headers: {},
@@ -68,63 +69,65 @@ export const signup =
         },
       });
       callback(true);
-    } catch (e: any) {
-      const message = e?.response?.data?.message || ("Email in use" as string);
+    } catch (e: unknown) {
+      const err = e as AxiosError;
+      const message =
+        err?.response?.data?.message || ("Email in use" as string);
       dispatch({ type: AUTH_ERROR_SIGNUP, payload: message });
       callback(false);
     }
   };
 
-export const signout = (callback: any) => async (dispatch: any) => {
-  const user = JSON.parse(localStorage.getItem("user") || "");
-  if (user) {
-    try {
-      // eslint-disable-next-line no-unused-vars
-      await instance.post(
-        "/auth/signout",
-        {
-          email: user.email,
-        },
-        {
-          headers: {},
-        }
-      );
-      // console.log(`${user.email} signout success: ${response.data.ok}`);
-    } catch (e) {
-      // console.log(`${user.email} signout failure. ${e}`);
-      dispatch({
-        type: ACCESS_TOKEN_DELETE_ERROR,
-        payload: { e, user }, // logging
-      });
-    } finally {
-      localStorage.removeItem("user");
+export const signout =
+  (callback: () => void) => async (dispatch: Dispatch<AnyAction>) => {
+    const user = JSON.parse(localStorage.getItem("user") || "");
+    if (user) {
+      try {
+        await instance.post(
+          "/auth/signout",
+          {
+            email: user.email,
+          },
+          {
+            headers: {},
+          }
+        );
+        // console.log(`${user.email} signout success: ${response.data.ok}`);
+      } catch (e) {
+        // console.log(`${user.email} signout failure. ${e}`);
+        dispatch({
+          type: ACCESS_TOKEN_DELETE_ERROR,
+          payload: { e, user }, // logging
+        });
+      } finally {
+        localStorage.removeItem("user");
+      }
     }
-  }
-  if (window.gapi) {
-    const auth2 = window.gapi.auth2.getAuthInstance();
-    if (auth2 != null) {
-      auth2.signOut().then(
-        auth2.disconnect().then(() => {
-          console.log("Signed out from google...");
-        })
-      );
+    if (window.gapi) {
+      const auth2 = window.gapi.auth2.getAuthInstance();
+      if (auth2 != null) {
+        auth2.signOut().then(
+          auth2.disconnect().then(() => {
+            console.log("Signed out from google...");
+          })
+        );
+      }
     }
-  }
-  dispatch({ type: AUTH_USER, payload: "" });
-  dispatch({ type: AUTH_ERROR_SIGNUP, payload: "" });
-  dispatch({ type: AUTH_ERROR_SIGNIN, payload: "" });
-  dispatch({ type: AUTH_EXPIRY_TOKEN, payload: {} });
-  dispatch({ type: GET_USER_DATA, payload: {} });
-  dispatch({ type: GET_USER_DATA_ERROR, payload: "" });
-  dispatch({ type: GET_CURRENT_USER, payload: {} });
-  dispatch({ type: RESET_PASSWORD_ERROR, payload: "" });
-  dispatch({ type: CHANGE_PASSWORD_ERROR, payload: "" });
-  return callback(); // callback for token expire timeout countdownHOC
-};
+    dispatch({ type: AUTH_USER, payload: "" });
+    dispatch({ type: AUTH_ERROR_SIGNUP, payload: "" });
+    dispatch({ type: AUTH_ERROR_SIGNIN, payload: "" });
+    dispatch({ type: AUTH_EXPIRY_TOKEN, payload: {} });
+    dispatch({ type: GET_USER_DATA, payload: {} });
+    dispatch({ type: GET_USER_DATA_ERROR, payload: "" });
+    dispatch({ type: GET_CURRENT_USER, payload: {} });
+    dispatch({ type: RESET_PASSWORD_ERROR, payload: "" });
+    dispatch({ type: CHANGE_PASSWORD_ERROR, payload: "" });
+    return callback(); // callback for token expire timeout countdownHOC
+  };
 
 export const signin =
   (formProps: any, callback: (result: boolean) => void) =>
-  async (dispatch: any) => {
+  async (dispatch: Dispatch<AnyAction>) => {
     try {
       const response = await instance.post("/auth/signin", formProps, {
         headers: {},
@@ -150,44 +153,46 @@ export const signin =
     }
   };
 
-export const refreshToken = (callback: any) => async (dispatch: any) => {
-  try {
-    const response = await instance.post(
-      "/auth/refresh-token",
-      {},
-      {
-        headers: {},
-      }
-    );
-    const dateNow = Date.now();
-    dispatch({ type: AUTH_USER, payload: response.data.accessToken });
-    dispatch({
-      type: AUTH_EXPIRY_TOKEN,
-      payload: {
-        expiryToken: response.data.expiryToken,
-        startTime: dateNow,
-      },
-    });
+export const refreshToken =
+  (callback: (result: boolean) => void) =>
+  async (dispatch: Dispatch<AnyAction>) => {
+    try {
+      const response = await instance.post(
+        "/auth/refresh-token",
+        {},
+        {
+          headers: {},
+        }
+      );
+      const dateNow = Date.now();
+      dispatch({ type: AUTH_USER, payload: response.data.accessToken });
+      dispatch({
+        type: AUTH_EXPIRY_TOKEN,
+        payload: {
+          expiryToken: response.data.expiryToken,
+          startTime: dateNow,
+        },
+      });
 
-    const user = JSON.parse(localStorage["user"]);
-    localStorage.setItem(
-      "user",
-      JSON.stringify({
-        ...user, // keep other info without change
-        accessToken: response.data.accessToken,
-        startTime: dateNow,
-        expiryToken: response.data.expiryToken,
-      })
-    );
-    return callback(true);
-  } catch (e) {
-    dispatch({
-      type: REFRESH_TOKEN_ERROR,
-      payload: e, // logging
-    });
-    return callback(false);
-  }
-};
+      const user = JSON.parse(localStorage["user"]);
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          ...user, // keep other info without change
+          accessToken: response.data.accessToken,
+          startTime: dateNow,
+          expiryToken: response.data.expiryToken,
+        })
+      );
+      return callback(true);
+    } catch (e) {
+      dispatch({
+        type: REFRESH_TOKEN_ERROR,
+        payload: e, // logging
+      });
+      return callback(false);
+    }
+  };
 
 export const resfreshTokenRestartTimeout = () => ({
   type: REFRESH_TOKEN_RESTART_TIMEOUT,
@@ -195,7 +200,8 @@ export const resfreshTokenRestartTimeout = () => ({
 
 // formProps == email, reset es solamente para el envio de mail/link para change
 export const resetPassword =
-  (formProps: any, callback: (result:boolean) => void) => async (dispatch: any) => {
+  (formProps: any, callback: (result: boolean) => void) =>
+  async (dispatch: Dispatch<AnyAction>) => {
     try {
       const response = await instance.post("/auth/reset-password", formProps, {
         headers: {},
@@ -207,12 +213,13 @@ export const resetPassword =
         });
       }
       callback(true);
-    } catch (e: any) {
-      console.warn("e ", e);
+    } catch (e: unknown) {
+      const err = e as AxiosError;
+      console.warn("e ", err);
       dispatch({
         type: RESET_PASSWORD_ERROR,
         // res.status(404).send({ message: 'User Email Not found.' });
-        payload: e.response?.data?.message,
+        payload: err.response?.data?.message,
       });
       callback(false);
     }
@@ -220,7 +227,8 @@ export const resetPassword =
 
 // formProps email, token, oldPassword, newPassword
 export const changePassword =
-  (formProps: any, callback: any) => async (dispatch: any) => {
+  (formProps: any, callback: (result: boolean) => void) =>
+  async (dispatch: Dispatch<AnyAction>) => {
     try {
       const response = await instance.post("/auth/change-password", formProps, {
         headers: {},
@@ -229,11 +237,13 @@ export const changePassword =
         type: CHANGE_PASSWORD_SUCCESS,
         payload: response.data,
       });
-      return callback();
-    } catch (e: any) {
+      return callback(true);
+    } catch (e: unknown) {
+      const err = e as AxiosError;
       dispatch({
         type: CHANGE_PASSWORD_ERROR,
-        payload: e.response.data.message,
+        payload: err?.response?.data.message,
       });
+      return callback(false);
     }
   };

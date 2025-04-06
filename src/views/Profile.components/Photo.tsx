@@ -1,7 +1,9 @@
-import React, { useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import axios, { AxiosInstance } from "axios";
-
 import { Modal, Button } from "../../common";
+
+// Import auth-header directly at the top
+import authHeader from "../../utils/misc/auth-header";
 
 interface PhotoProps {
   avatar?: string;
@@ -12,26 +14,27 @@ const url =
     ? "http://localhost:4939/lime-api"
     : "https://lime-api.sfantini.us/lime-api";
 
-function Photo({ avatar }: PhotoProps): JSX.Element {
-  const [image, setImage] = React.useState("");
-  const [uploading, setUploading] = React.useState(false);
-  const [showModal, setShowModal] = React.useState(false);
-  const [errorMessage, setErrorMessage] = React.useState("");
+function Photo({ avatar }: PhotoProps): React.ReactElement {
+  const [image, setImage] = useState<string>(avatar || "");
+  const [uploading, setUploading] = useState<boolean>(false);
+  const [showModal, setShowModal] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string>("");
 
-  const axiosinstance = useRef<AxiosInstance>();
+  const axiosinstance = useRef<AxiosInstance | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null); // Reference to the file input
 
   const toggleModalState = () => {
     setShowModal(false);
     setErrorMessage("");
   };
 
-  React.useEffect(() => {
-    const authHeader =
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      require("../../utils/misc/auth-header").default;
+
+  useEffect(() => {
+    // Initialize axios instance with headers
     const defaultOptions = {
-      headers: authHeader,
+      headers: authHeader(),
     };
+
     axiosinstance.current = axios.create(defaultOptions);
 
     if (!image) {
@@ -40,12 +43,15 @@ function Photo({ avatar }: PhotoProps): JSX.Element {
     }
   }, [avatar, image]);
 
-  const uploadFileHandler = (e: any) => {
-    const file = e.target.files[0];
+  const uploadFileHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
     const bodyFormData = new FormData();
     bodyFormData.append("image", file);
     setUploading(true);
-    axiosinstance?.current
+
+    axiosinstance.current
       ?.post(`${url}/shop/uploads/profile`, bodyFormData)
       .then((response) => {
         const imagePath = response.data.filePath || "No image available";
@@ -53,10 +59,15 @@ function Photo({ avatar }: PhotoProps): JSX.Element {
         setUploading(false);
       })
       .catch((err) => {
-        const msg = err.response.data.message || "Try again";
+        const msg = err.response?.data.message || "Try again";
         setErrorMessage(msg);
         setShowModal(true);
         setUploading(false);
+
+        // Reset the file input to allow re-uploading the same file
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
       });
   };
 
@@ -70,7 +81,7 @@ function Photo({ avatar }: PhotoProps): JSX.Element {
         {image && image !== "" && image !== "Not available" ? (
           <img
             alt="Profile"
-            src={`${image}`}
+            src={image}
             className="inline w-200p h-200p object-cover text-center"
             onError={() => setImage("Not available")}
           />
@@ -105,6 +116,7 @@ function Photo({ avatar }: PhotoProps): JSX.Element {
         <Button padding="p-0" noArrow>
           <div className="relative flex flex-no-wrap py-5p md:py-8p lg:py-10p px-20p">
             <input
+              ref={fileInputRef}
               className="absolute top-0 left-0 opacity-0 w-165p h-40p cursor-pointer font-0"
               type="file"
               onChange={uploadFileHandler}
