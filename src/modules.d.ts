@@ -3,5 +3,7 @@ declare module "yup";
 declare module "lodash.isempty";
 
 interface Window {
-  gapi: typeof gapi;
+  gapi: typeof gapi & {
+    auth2: { getAuthInstance: () => { signOut: Promise; disconnect: Promise } };
+  };
 }
