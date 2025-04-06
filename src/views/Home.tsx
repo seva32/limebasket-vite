@@ -153,7 +153,7 @@ function Home() {
               mainTitle="Cats"
               imgSrc="https://res.cloudinary.com/seva32/image/upload/v1605302491/cardCatBg_g05gho.png"
               brandLogo="https://res.cloudinary.com/seva32/image/upload/v1604425921/logo_rblope.svg"
-              linkTo="/products/dogs"
+              linkTo="/products/cats"
               buttonLinkTo="/products/cats"
               buttonContent="Shop now!"
               width={isPortrait ? "tw-w-is-10" : "tw-w-is-3"}
@@ -164,7 +164,7 @@ function Home() {
               mainTitle="Health"
               imgSrc="https://res.cloudinary.com/seva32/image/upload/v1605302491/cardHealthBg_lrmwjh.png"
               brandLogo="https://res.cloudinary.com/seva32/image/upload/v1604425921/logo_rblope.svg"
-              linkTo="/products/dogs"
+              linkTo="/products/health"
               buttonLinkTo="/products/health"
               buttonContent="Shop now!"
               width={isPortrait ? "tw-w-is-10" : "tw-w-is-3"}

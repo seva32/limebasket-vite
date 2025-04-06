@@ -15,6 +15,7 @@ function Prod() {
     image: string;
   } | null>(null);
   const [showNoItemsMsg, setShowNoItemsMsg] = React.useState(false);
+  const [product, setProduct] = React.useState();
   const timeoutRef = React.useRef();
   const { id } = useParams();
   const navigate = useNavigate();
@@ -23,9 +24,9 @@ function Prod() {
   const [showQuestion, setShowQuestion] = React.useState(false);
   const [showReviews, setShowReviews] = React.useState(false);
 
-  const productDetails: { product: any; loading: boolean; error: string } =
-    useAppSelector((state) => state.productDetails);
-  const product = productDetails.product;
+  const productDetails: { loading: boolean; error: string } = useAppSelector(
+    (state) => state.productDetails
+  );
   const loading = productDetails.loading;
   const error = productDetails.error;
 
@@ -63,7 +64,11 @@ function Prod() {
   }, [error, navigate]);
 
   React.useEffect(() => {
-    dispatch(detailsProduct(id));
+    (async () => {
+      const product = await dispatch(detailsProduct(id));
+      console.log("product: ", product);
+      setProduct(product);
+    })();
   }, [dispatch, id]);
 
   React.useEffect(() => {
@@ -135,7 +140,7 @@ function Prod() {
             </h1>
           </div>
 
-          {loading ? (
+          {loading || !product ? (
             <div className="w-full h-200p flex justify-center items-center">
               <div className="w-200p">
                 <Loading />
@@ -217,7 +222,7 @@ function Prod() {
         </div>
 
         {/* contact reviews */}
-        {loading ? null : (
+        {loading || !product ? null : (
           <div className="w-full h-auto relative z-10">
             {/* contact = ask question */}
             <div className="w-full flex flex-col flex-no-wrap justify-center items-center h-auto py-8">
@@ -277,18 +282,20 @@ function Prod() {
               )}
 
               {/* review accordion */}
-              <div
-                className={`w-full ${
-                  showReviews ? "max-h-full" : "max-h-none overflow-hidden"
-                } backface bg-lime-70 rounded-lg mt-2`}
-              >
+              {nickname && product && (
                 <div
-                  id="reviews-section"
-                  className="block mx-auto my-0 py-2 md:py-6 w-4/5"
+                  className={`w-full ${
+                    showReviews ? "max-h-full" : "max-h-none overflow-hidden"
+                  } backface bg-lime-70 rounded-lg mt-2`}
                 >
-                  <Reviews user={nickname} product={product} />
+                  <div
+                    id="reviews-section"
+                    className="block mx-auto my-0 py-2 md:py-6 w-4/5"
+                  >
+                    <Reviews user={nickname} product={product} />
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         )}

@@ -56,12 +56,12 @@ function Reviews({ user, product }) {
     setReviewComments({ ...reviewComments, errMsg: [] });
 
     // Hide the modal and overlay
-    modal.current.classList.remove("show");
-    modalOverlay.current.classList.remove("show");
+    modal.current?.classList.remove("show");
+    modalOverlay.current?.classList.remove("show");
     form.current.reset();
 
     // Set focus back to element that had it before the modal was opened
-    focusedElementBeforeModal.current.focus();
+    focusedElementBeforeModal.current?.focus();
   }, [reviewComments, reviewName]);
 
   React.useEffect(() => {
@@ -133,7 +133,8 @@ function Reviews({ user, product }) {
     }
 
     // Save current focus
-    focusedElementBeforeModal.current = document.activeElement || null;
+    if (focusedElementBeforeModal.current)
+      focusedElementBeforeModal.current = document.activeElement || null;
 
     // Show the modal and overlay
     modal.current.classList.add("show");
@@ -283,9 +284,8 @@ function Reviews({ user, product }) {
                   <div className="meta relative z-0 h-auto bg-honeydew rounded-l-lg">
                     <img
                       alt="product review"
-                      className="photo w-75p h-75p md:w-100p md:h-100p lg:w-150p lg:h-150p m-0 bg-honeydew rounded-tl-lg"
+                      className="photo px-6 w-75p h-75p md:w-100p md:h-100p lg:w-150p lg:h-150p m-0 bg-honeydew rounded-tl-lg"
                       src={
-                        (user && user.image) ||
                         "https://res.cloudinary.com/seva32/image/upload/v1602277227/avatar_vkmaep.svg"
                       }
                     />
@@ -327,7 +327,7 @@ function Reviews({ user, product }) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="add-review-header"
-        className="fixed-center z-30 flex-col border-space border-2 md:border-4 rounded-lg  transition-all duration-300 overflow-hidden hidden w-256p md:w-500p lg:w-600p bg-dirty"
+        className="fixed-center relative z-30 flex-col border-space border-2 md:border-4 rounded-lg  transition-all duration-300 overflow-hidden hidden w-256p md:w-500p lg:w-600p bg-dirty"
         ref={modal}
         onKeyDown={trapTabKey}
         aria-hidden="true"
@@ -351,7 +351,7 @@ function Reviews({ user, product }) {
         {/* form */}
         <button
           type="button"
-          className="close-btn absolute top-0 right-10p cursor-pointer h-10p md:h-20p lg:h-30p flex justify-center"
+          className="close-btn cursor-pointer h-10p md:h-20p lg:h-30p flex justify-center"
           aria-label="close"
           title="Close"
           onClick={closeModal}
@@ -360,9 +360,12 @@ function Reviews({ user, product }) {
             <strong>x</strong>
           </span>
         </button>
-        <div id="review-form-container" className="w-full font-body text-space">
-          <div id="add-review-header" className="m-0 p-2 md:p-4 ">
-            <span className="text-white bg-space rounded-full px-2 py-1">
+        <div
+          id="review-form-container"
+          className="p-6 w-full font-body text-space"
+        >
+          <div id="add-review-header" className="m-0 p-2 md:p-4 text-center">
+            <span className="text-white bg-space rounded px-2 py-1">
               Add Review
             </span>
           </div>
