@@ -48,6 +48,7 @@ export default function appRouter() {
           <Route path="/payment" element={<Payment />} />
           <Route path="/products/:id" element={<Products />} />
           <Route path="/product/:id" element={<Product />} />
+          <Route path="/cart" element={<Cart />} />
           <Route path="/cart/:id" element={<Cart />} />
           <Route path="/order/:id" element={<Order />} />
           <Route path="/place-order" element={<PlaceOrder />} />

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable react/jsx-curly-newline */
 import React from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
@@ -35,7 +35,7 @@ function Header() {
 }
 
 function ProductList({ products, removeFromCartHandler }) {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const itemCount = products.reduce(
     (quantity, product) => quantity + +product.qty,
@@ -240,9 +240,9 @@ Summary.defaultProps = {
 
 function Page() {
   const [loading, setLoading] = React.useState(true); // loader until redux update
-  const cart = useSelector((state) => state.cart);
+  const cart = useAppSelector((state) => state.cart);
   const { cartItems } = cart;
-  const auth = useSelector((state) => state.auth);
+  const auth = useAppSelector((state) => state.auth);
   const { authenticated } = auth;
   const { id } = useParams();
   const location = useLocation();
@@ -253,7 +253,7 @@ function Page() {
 
   const productId = id || null;
   const qty = location.search ? Number(location.search.split("=")[1]) : 1;
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   React.useEffect(() => {
     window.scrollTo(0, 0);
