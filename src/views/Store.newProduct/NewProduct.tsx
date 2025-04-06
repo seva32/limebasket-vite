@@ -1,12 +1,22 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useAppSelector, useAppDispatch } from "../../store/hooks";
-import axios, { AxiosInstance } from "axios";
+import axios, { AxiosError } from "axios";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 
 import { saveProduct } from "../../store/actions/shop/productActions";
 import { Modal, ButtonCell, Alert } from "../../common";
 import { PRODUCT_SAVE_FAIL } from "../../store/actions/shop/shopActionTypes/productActionTypes";
+import authHeader from "../../utils/misc/auth-header";
+
+const url =
+  process.env.NODE_ENV === "development"
+    ? "http://localhost:4939/lime-api"
+    : "https://lime-api.sfantini.us/lime-api";
+
+const axiosInstance = axios.create({
+  headers: authHeader(),
+});
 
 type SubmitNewProduct = {
   name: string;
@@ -19,33 +29,19 @@ type SubmitNewProduct = {
 };
 
 function NewProduct() {
-  const [image, setImage] = React.useState("");
-  const [successMessage, setSuccessMessage] = React.useState(false);
-  const [showUploadModal, setShowUploadModal] = React.useState(false);
-  const [errorUploadMessage, setErrorUploadMessage] = React.useState("");
-  const [uploadingFile, setUploadingFile] = React.useState(false);
+  const [image, setImage] = useState("");
+  const [successMessage, setSuccessMessage] = useState(false);
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [errorUploadMessage, setErrorUploadMessage] = useState("");
+  const [uploadingFile, setUploadingFile] = useState(false);
 
-  const timeoutRef = React.useRef<any>();
-  const axiosinstance = React.useRef<AxiosInstance>();
+  const timeoutRef = useRef<number | null>(null);
 
   const dispatch = useAppDispatch();
-
   const productSave = useAppSelector((state) => state.productSave);
-  const {
-    loading: loadingSave,
-    error: errorSave,
-    product: newProductSaved,
-  }: { loading: boolean; error: string; product: any } = productSave;
+  const { loading: loadingSave, error: errorSave } = productSave;
 
-  React.useEffect(() => {
-    const authHeader =
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      require("../../utils/misc/auth-header").default;
-    const defaultOptions = {
-      headers: authHeader(""),
-    };
-    axiosinstance.current = axios.create(defaultOptions);
-
+  useEffect(() => {
     if (errorSave) {
       setErrorUploadMessage(errorSave);
       setShowUploadModal(true);
@@ -53,45 +49,50 @@ function NewProduct() {
     }
 
     if (successMessage) {
-      timeoutRef.current = window.setTimeout(
-        () => setSuccessMessage(false),
-        5000
-      );
+      timeoutRef.current = window.setTimeout(() => {
+        setSuccessMessage(false);
+      }, 5000);
     }
 
-    return () => window.clearTimeout(timeoutRef.current);
+    return () => {
+      if (timeoutRef.current !== null) {
+        window.clearTimeout(timeoutRef.current);
+      }
+    };
   }, [errorSave, successMessage]);
 
-  const uploadFileHandler = (e: any) => {
-    const file = e.target.files[0];
+  const uploadFileHandler = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
     const bodyFormData = new FormData();
     bodyFormData.append("image", file);
     setUploadingFile(true);
-    axiosinstance?.current
-      ?.post("/shop/uploads/product", bodyFormData)
-      .then((response) => {
-        const imagePath = response.data.filePath || "No image available";
-        setImage(imagePath);
-        setUploadingFile(false);
-      })
-      .catch((err) => {
-        const msg = err.response.data.message || "Try again";
-        setErrorUploadMessage(msg);
-        setShowUploadModal(true);
-        setUploadingFile(false);
-      });
+
+    try {
+      const response = await axiosInstance.post(
+        url + "/shop/uploads/product",
+        bodyFormData
+      );
+      const imagePath = response.data.filePath || "No image available";
+      setImage(imagePath);
+    } catch (err: unknown) {
+      const error = err as AxiosError;
+      const msg = error?.response?.data?.message || "Try again";
+      setErrorUploadMessage(msg);
+      setShowUploadModal(true);
+    } finally {
+      setUploadingFile(false);
+    }
   };
 
   const toggleModalState = () => {
-    dispatch({
-      type: PRODUCT_SAVE_FAIL,
-      payload: "",
-    });
+    dispatch({ type: PRODUCT_SAVE_FAIL, payload: "" });
     setShowUploadModal(false);
     setErrorUploadMessage("");
   };
 
-  const formik = useFormik({
+  const formik = useFormik<SubmitNewProduct>({
     initialValues: {
       name: "",
       price: "",
@@ -110,18 +111,14 @@ function NewProduct() {
         ),
       brand: Yup.string()
         .required("No brand provided.")
-        .min(2, "Name is too short - should be 8 chars minimum.")
+        .min(2, "Brand is too short - should be 8 chars minimum.")
         .matches(
           /^[a-zA-Z0-9.]+$/,
           "Brand can only contain Latin letters and numbers."
         ),
       category: Yup.string()
-        .required("No category provided.")
-        .min(2, "Category is too short - should be 8 chars minimum.")
-        .matches(
-          /^[a-zA-Z0-9.]+$/,
-          "Category can only contain Latin letters and numbers."
-        ),
+        .required("Please select a category.")
+        .oneOf(["dogs", "cats", "health"], "Invalid category selected."),
       price: Yup.number()
         .required("No price provided.")
         .positive("No negative numbers.")
@@ -139,26 +136,18 @@ function NewProduct() {
         ),
     }),
     onSubmit: (values, { setStatus, resetForm }) => {
-      values = {
+      const payload = {
         ...values,
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         image: image === "No image available" ? "" : image,
       };
       dispatch(
-        saveProduct(
-          values,
-          // on success
-          () => {
-            setSuccessMessage(true);
-            setErrorUploadMessage("");
-          }
-        )
+        saveProduct(payload, () => {
+          setSuccessMessage(true);
+          setErrorUploadMessage("");
+        })
       );
-      resetForm({});
-      setStatus({
-        success: true,
-      });
+      resetForm();
+      setStatus({ success: true });
     },
   });
 
@@ -228,7 +217,7 @@ function NewProduct() {
           <li>
             <div className="absolute top-0 right-0 flex flex-col flex-no-wrap justify-center items-center">
               <ButtonCell noPadding>
-                <div className="relative flex flex-no-wrap py-5p md:py-8p lg:py-10p px-20p">
+                <div className="relative flex items-center flex-no-wrap py-5p px-4">
                   <input
                     className="absolute top-0 left-0 opacity-0 w-165p h-40p cursor-pointer font-0"
                     type="file"
@@ -236,8 +225,7 @@ function NewProduct() {
                   />
                   <svg
                     className="flex-shrink self-center"
-                    width="30"
-                    height="22"
+                    height="14"
                     viewBox="0 0 24 16"
                   >
                     <title />
@@ -343,26 +331,29 @@ function NewProduct() {
             ) : null}
           </li>
           <li className="relative w-full py-2 flex flex-col flex-no-wrap">
-            <label
-              className="py-2 flex flex-row flex-no-wrap justify-center items-center"
-              htmlFor="name"
-            >
-              <span className="w-2/5 flex justify-center md:pl-8 text-sm md:text-base">
+            <div className="py-2 flex flex-row flex-wrap justify-center items-start md:items-center">
+              <span className="w-2/5 flex justify-center md:pl-8 text-sm md:text-base mb-2 md:mb-0">
                 <b className="bg-indigo-500 px-2 rounded-l-full rounded-r-full text-indigo-100">
                   Category
                 </b>
               </span>
-              <input
-                className="rounded border-solid border-2 border-indigo-200 w-3/5"
-                type="text"
-                name="category"
-                id="category"
-                placeholder="Category"
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                value={formik.values.category}
-              />
-            </label>
+              <div className="w-3/5 flex flex-col gap-4">
+                {["dogs", "cats", "health"].map((option) => (
+                  <label key={option} className="flex items-center space-x-2">
+                    <input
+                      type="radio"
+                      name="category"
+                      value={option}
+                      checked={formik.values.category === option}
+                      onChange={formik.handleChange}
+                      onBlur={formik.handleBlur}
+                      className="form-radio text-indigo-500 mr-2"
+                    />
+                    <span className="text-sm capitalize">{option}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
 
             {formik.touched.category && formik.errors.category ? (
               <Alert
@@ -372,6 +363,7 @@ function NewProduct() {
               />
             ) : null}
           </li>
+
           <li className="relative w-full py-2 flex flex-col flex-no-wrap">
             <label
               className="py-2 flex flex-row flex-no-wrap justify-center items-center"
@@ -449,7 +441,7 @@ function NewProduct() {
       {successMessage && (
         <Alert
           title="New Product Saved!"
-          content={`Details: ${Object.entries(newProductSaved.data)
+          content={`Details: ${Object.entries(formik.values)
             .map((e) => `${e[0]}: ${e[1]}`)
             .join("\n")}`}
           bell

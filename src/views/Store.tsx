@@ -1,6 +1,4 @@
-/* eslint-disable react/jsx-curly-newline */
-import React, { useState, useEffect } from "react";
-import useMediaQuery from "../utils/hooks/useMediaQuery";
+import { useState } from "react";
 import classnames from "classnames";
 
 import { Section } from "lime";
@@ -10,33 +8,16 @@ import NewProduct from "./Store.newProduct";
 import Orders from "./Store.orders";
 
 function Store() {
-  const isMobile = useMediaQuery();
   const [hideNav, setHideNav] = useState(false);
   const [mainTitle, setMainTitle] = useState("Products");
   const [subTitle, setSubTitle] = useState("Products");
-  const [hideContent, setHideContent] = useState(false);
-
-  useEffect(() => {
-    if (isMobile) {
-      setHideNav(false);
-      setHideContent(true);
-    } else {
-      setHideNav(false);
-      setHideContent(false);
-    }
-  }, [isMobile]);
 
   const handleClickNav = (title: string, sub: string) => {
     setMainTitle(title);
     setSubTitle(sub);
-    if (isMobile) {
-      setHideNav(true);
-      setHideContent(false);
-    }
   };
 
   const onClickCardButton = () => {
-    setHideContent(true);
     setHideNav(false);
   };
 
@@ -191,12 +172,7 @@ function Store() {
 
             {/* main content */}
             <div
-              className={classnames(
-                "md:relative md:flex md:flex-col md:flex-no-wrap md:w-4/5",
-                {
-                  hidden: hideContent,
-                }
-              )}
+              className="md:relative md:flex md:flex-col md:flex-no-wrap md:w-4/5"
             >
               <Section
                 width="tw-max-w-full"
@@ -204,7 +180,6 @@ function Store() {
                 height="tw-h-full"
                 mainTitle={mainTitle}
                 subTitle={subTitle}
-                arrow={isMobile}
                 onClickCardButton={onClickCardButton}
               >
                 {subTitle === "Products" && <Products />}

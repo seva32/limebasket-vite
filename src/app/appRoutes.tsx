@@ -28,112 +28,12 @@ const PlaceOrder = loadable(() => import("../views/PlaceOrder"));
 const Shipping = loadable(() => import("../views/Shipping"));
 const Terms = loadable(() => import("../views/Terms"));
 
-// const UniversalComponent = loadable(
-//   async (props: RouteProp) => {
-//     const result = await new Promise((resolve) =>
-//       setTimeout(() => resolve("good"), 500)
-//     );
-//     console.log("result", result);
-//     return import(`../views/${props.page}`);
-//   },
-//   {
-//     fallback: <div>Loading...</div>,
-//   }
-// );
-
-export const routes: RouteProp[] = [
-  {
-    path: "/",
-    page: "Home",
-    loadData: (value: string) => console.log(value),
-  },
-  {
-    path: "/signin",
-    page: "Signin",
-  },
-  {
-    path: "/signup",
-    page: "Signup",
-  },
-  {
-    path: "/signout",
-    page: "Signout",
-  },
-  {
-    path: "/profile",
-    page: "Profile",
-  },
-  {
-    path: "/store",
-    page: "Store",
-  },
-  {
-    path: "/reset-password",
-    page: "ResetPassword",
-  },
-  {
-    path: "/reset-password/:token/:email",
-    page: "ChangePassword",
-  },
-  {
-    path: "/products/:id?",
-    page: "Products",
-  },
-  {
-    path: "/product/:id?",
-    page: "Product",
-  },
-  {
-    path: "/cart/:id?",
-    page: "Cart",
-  },
-  {
-    path: "/order/:id?",
-    page: "Order",
-  },
-  {
-    path: "/payment",
-    page: "Payment",
-  },
-  {
-    path: "/place-order",
-    page: "PlaceOrder",
-  },
-  {
-    path: "/shipping",
-    page: "Shipping",
-  },
-  {
-    path: "/about",
-    page: "About",
-  },
-  {
-    path: "/terms",
-    page: "Terms",
-  },
-  //   {
-  //     path: "/paypal",
-  //     page: "Paypal",
-  //   },
-  //   {
-  //     path: "/braintree",
-  //     page: "Braintree",
-  //   },
-];
-
 export default function appRouter() {
   return (
     <ErrorBoundary fallback={<p>Something went wrong</p>}>
       <Layout>
         <ScrollToTop />
         <Routes>
-          {/* {routes.map((route: RouteProp, key: any) => (
-          <Route
-            key={key}
-            element={<UniversalComponent {...route} />}
-            {...route}
-          />
-        ))} */}
           <Route path="/" element={<Home />} />
           <Route path="/signin" element={<Signin />} />
           <Route path="/signup" element={<Signup />} />
