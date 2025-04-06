@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-curly-newline */
 import React from "react";
 import { useAppSelector, useAppDispatch } from "../../store/hooks";
 import isEmpty from "lodash.isempty";
@@ -22,7 +21,7 @@ function Products() {
     null
   );
   // for the ... delete button just affect one cell
-  const [workingRow, setWorkingRow] = React.useState(null);
+  const [workingRow, setWorkingRow] = React.useState<number | null>(null);
   // edit name and price
   const [editName, setEditName] = React.useState("");
   const [editPrice, setEditPrice] = React.useState("");
@@ -34,7 +33,7 @@ function Products() {
     field?: string;
   } | null>(null);
 
-  const timeoutRef = React.useRef<any>();
+  const timeoutRef = React.useRef<number | null>(null);
 
   const dispatch = useAppDispatch();
   const productList: { products: any; loading: boolean; error: string } =
@@ -80,7 +79,7 @@ function Products() {
       setEditState(false);
     }
 
-    return () => window.clearTimeout(timeoutRef.current);
+    return () => window.clearTimeout(timeoutRef.current as number);
   }, [
     products,
     dispatch,
@@ -91,7 +90,7 @@ function Products() {
     editPrice,
   ]);
 
-  const deleteHandler = (id: any) => {
+  const deleteHandler = (id: number) => {
     setWorkingRow(id);
     dispatch(
       deleteProduct(
@@ -114,7 +113,7 @@ function Products() {
     setErrorModalMessage("");
   };
 
-  const editFields = (id: any) => {
+  const editFields = (id: number) => {
     setEditName("*"); // * for edit available
     setEditPrice("*");
     setEditState(!editState); // !editState xq se controla solo con bttn edit

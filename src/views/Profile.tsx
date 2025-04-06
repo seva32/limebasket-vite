@@ -21,6 +21,7 @@ function Profile() {
 
   React.useEffect(() => {
     dispatch(getUserData());
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleClickNav = (title: string, sub: string) => {
@@ -47,7 +48,7 @@ function Profile() {
             <Navbar logged dark clearModal={() => undefined} />
           </div>
 
-          <div className="relative w-full h-auto flex flex-col h-full">
+          <div className="relative w-full flex flex-col h-full">
             {/* main content */}
             <div className="w-full h-auto md:flex md:flex-row md:flex-no-wrap my-10">
               {/* side nav */}

@@ -23,10 +23,16 @@ import {
 } from "../common";
 import Loading from "../common/LoaderLoading";
 
+const url =
+  process.env.NODE_ENV === "development"
+    ? "http://localhost:4939/lime-api"
+    : "https://lime-api.sfantini.us/lime-api";
+
 function Products() {
   const { id } = useParams();
   const [category, setCategory] = React.useState(id);
   const location = useLocation();
+  const [products, setProducts] = React.useState();
 
   const { isPortrait } = useMediaQuery();
   const [showSearchModal, setShowSearch] = React.useState(false);
@@ -36,11 +42,7 @@ function Products() {
 
   const auth = useAppSelector((state) => state.auth);
   const { authenticated } = auth;
-  const productList: { products: any; loading: boolean; error: string } =
-    useAppSelector((state) => state.productList);
-  const products = productList.products;
-  const loading = productList.loading;
-  const error = productList.error;
+  const { loading, error } = useAppSelector((state) => state.productList);
 
   const productSearchKey = useAppSelector((state) => state.productSearchKey);
   const searchKeyword = productSearchKey.key;
@@ -54,12 +56,22 @@ function Products() {
     const hash = location.hash; // eslint-disable-line
     if (hash && document.getElementById(hash.substr(1))) {
       document
-        .getElementById(hash.substr(1))?.scrollIntoView({ behavior: "smooth" });
+        .getElementById(hash.substr(1))
+        ?.scrollIntoView({ behavior: "smooth" });
     }
   }, [location.hash]);
 
   React.useEffect(() => {
-    dispatch(listProducts(category, searchKeyword, ""));
+    (async () => {
+      try {
+        const products = await dispatch(
+          listProducts(category !== "all" ? category : "", "", "")
+        );
+        setProducts(products);
+      } catch {
+        /* empty */
+      }
+    })();
   }, [category, searchKeyword, dispatch]);
 
   const sortHandler = (value: string) => {
@@ -90,10 +102,8 @@ function Products() {
             className={classnames("max-w-full h-full bg-cover bg-center", {
               "bg-product-portrait": id === "dogs",
               "sm:bg-product-landscape": id === "dogs",
-              "bg-all-portrait":
-                id === "all" || id === "health",
-              "sm:bg-all-landscape":
-                id === "all" || id === "health",
+              "bg-all-portrait": id === "all" || id === "health",
+              "sm:bg-all-landscape": id === "all" || id === "health",
               "bg-cats-portrait": id === "cats",
               "sm:bg-cats-landscape": id === "cats",
             })}
@@ -130,9 +140,7 @@ function Products() {
             <ul className="w-full">
               <li className="w-full text-center block">
                 <h1 className="pt-12 sm:pt-0 text-white">
-                  {id !== "all"
-                    ? id
-                    : "all our products"}
+                  {id !== "all" ? id : "all our products"}
                 </h1>
               </li>
               <li className="w-full text-center block">
@@ -181,9 +189,7 @@ function Products() {
             <div className="w-1/3" />
             <div className="w-1/3">
               <h3 className="text-center" ref={element}>
-                {`Category: ${
-                  id !== "all" ? id : "All products"
-                }`}
+                {`Category: ${id !== "all" ? id : "All products"}`}
               </h3>
               <h3 className="text-center">
                 {`Filter: ${searchKeyword || "no filter applied"}`}
@@ -217,7 +223,7 @@ function Products() {
             {products &&
               products.map((p: any) => (
                 <Card
-                  imgSrc={p.image}
+                  imgSrc={`${p.image?.charAt?.(0) === '/' ? url : ''}${p.image}`}
                   brandLogo="https://res.cloudinary.com/seva32/image/upload/v1604425921/logo_rblope.svg"
                   linkTo={`/product/${p._id}`}
                   productId={p._id}
@@ -225,7 +231,6 @@ function Products() {
                   buttonContent="Add to Cart"
                   description={p.description}
                   buttonLinkTo={`/cart/${p._id}?qty=1`}
-                  width="tw-w-is-10 sm:tw-w-is-5 md:tw-w-is-3"
                   key={randomKey()}
                   classname="m-4"
                 />
