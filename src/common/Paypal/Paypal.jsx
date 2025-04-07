@@ -7,11 +7,10 @@ import PropTypes from "prop-types";
 import axios from "axios";
 import authHeader from "../../utils/misc/auth-header";
 
-const serverURL = process.env.VITE_SERVER_URL || "localhost:4939";
 const baseURL =
-  process.env.NODE_ENV !== "development"
-    ? `https://${serverURL}/lime-api`
-    : `http://${serverURL}/lime-api`;
+  process.env.NODE_ENV === "development"
+    ? "http://localhost:4939/lime-api"
+    : "https://lime-api.sfantini.us/lime-api";
 const clientId = process.env.VITE_PAYPAL_CLIENT;
 
 const PaypalButton = ({
