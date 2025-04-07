@@ -25,19 +25,20 @@ export const addToCart =
           headers: authHeader(),
         }
       );
+      const payload = {
+        product: data._id,
+        name: data.name,
+        image: data.image,
+        description: data.description,
+        price: data.price,
+        category: data.category,
+        countInStock: data.countInStock,
+        qty,
+        promo,
+      }
       dispatch({
         type: CART_ADD_ITEM,
-        payload: {
-          product: data._id,
-          name: data.name,
-          image: data.image,
-          description: data.description,
-          price: data.price,
-          category: data.category,
-          countInStock: data.countInStock,
-          qty,
-          promo,
-        },
+        payload,
       });
       const {
         cart: { cartItems },
@@ -46,7 +47,7 @@ export const addToCart =
         path: "/",
         sameSite: "strict",
       });
-      return callback();
+      return callback(payload);
     } catch {
       console.log("Product not found");
     }
