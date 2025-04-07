@@ -44,12 +44,12 @@ function Order() {
       }
     } else {
       (async () => {
-        if (!order._id || successPay || order._id !== id) {
+        if (!order?._id || successPay || order?._id !== id) {
           const orderData = await dispatch(detailsOrder(id));
           if (orderData) {
             setLoaded(true);
           }
-        } else if (order._id === id) {
+        } else if (order?._id === id) {
           setLoaded(true);
         }
       })();

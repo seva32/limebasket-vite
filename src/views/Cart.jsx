@@ -10,6 +10,11 @@ import { addToCart, removeFromCart } from "../store/actions/shop/cartActions";
 
 import { Head, Loader, Policies, Navbar, Button } from "../common";
 
+const url =
+  process.env.NODE_ENV === "development"
+    ? "http://localhost:4939/lime-api"
+    : "https://lime-api.sfantini.us/lime-api";
+
 function RandomKey() {
   return (
     Math.random().toString(36).substring(2, 15) +
@@ -34,7 +39,12 @@ function Header() {
   );
 }
 
-function ProductList({ products, removeFromCartHandler, updateQuantity }) {
+function ProductList({
+  products,
+  removeFromCartHandler,
+  updateQuantity,
+  itemsBackup = [],
+}) {
   const itemCount = products.reduce(
     (quantity, product) => quantity + +product.qty,
     0
@@ -60,7 +70,11 @@ function ProductList({ products, removeFromCartHandler, updateQuantity }) {
                 <Link to={`/product/${item.product}`}>
                   <img
                     className="min-w-full h-full rounded-lg object-cover"
-                    src={item.image}
+                    src={
+                      item.image ||
+                      itemsBackup.find((i) => i._id === item.product)?.image ||
+                      "https://res.cloudinary.com/seva32/image/upload/v1602275957/tags_v8n3rz.svg"
+                    }
                     alt={item.name}
                   />
                 </Link>
@@ -68,13 +82,24 @@ function ProductList({ products, removeFromCartHandler, updateQuantity }) {
               {/* product description */}
               <div className="w-1/2 p-4 rounded-lg text-space">
                 <Link className="uppercase" to={`/product/${item.product}`}>
-                  <h3 className="pl-4 pb-6 font-2rem">{item.name}</h3>
+                  <h3 className="pl-4 pb-6 font-2rem">
+                    {item.name ||
+                      itemsBackup.find((i) => i._id === item.product)?.name}
+                  </h3>
                 </Link>
                 <div className="pl-4 pb-6 font-body w-full h-auto">
-                  {item.description}
+                  {item.description ||
+                    itemsBackup.find((i) => i._id === item.product)
+                      ?.description}
                 </div>
                 <h3 className="font-2rem pl-4 py-2 sm:py-4">
-                  {formatCurrency(item.price)}
+                  {item.price ||
+                  itemsBackup.find((i) => i._id === item.product)?.price
+                    ? formatCurrency(
+                        item.price ||
+                          itemsBackup.find((i) => i._id === item.product).price
+                      )
+                    : "not available"}
                 </h3>
               </div>
             </div>
@@ -236,13 +261,13 @@ Summary.defaultProps = {
 function Page() {
   const cart = useAppSelector((state) => state.cart);
   const [localCartItems, setLocalCartItems] = React.useState(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       const storedCart = localStorage.getItem("localCart");
       return storedCart ? JSON.parse(storedCart) : cart.cartItems;
     }
     return cart.cartItems;
   });
-  
+
   const auth = useAppSelector((state) => state.auth);
   const { authenticated } = auth;
   const { id } = useParams();
@@ -257,31 +282,38 @@ function Page() {
   const dispatch = useAppDispatch();
 
   React.useEffect(() => {
+    (async () => {
+      await dispatch(addToCart(id, qty, "", (initialCart) => {
+        setLocalCartItems([initialCart]);
+      }));
+    })();
+  }, []);
+
+  React.useEffect(() => {
     window.scrollTo(0, 0);
   }, [productId]);
 
   React.useEffect(() => {
     localStorage.setItem("localCart", JSON.stringify(localCartItems));
   }, [localCartItems]);
-  
 
   React.useEffect(() => {
     setLocalCartItems(cart.cartItems);
   }, [cart.cartItems]);
 
-  React.useEffect(() => {
-    if (productId && qty) {
-      setLocalCartItems((prev) => {
-        const existingItem = prev.find((item) => item.product === productId);
-        if (existingItem) {
-          return prev.map((item) =>
-            item.product === productId ? { ...item, qty } : item
-          );
-        }
-        return [...prev, { product: productId, qty }];
-      });
-    }
-  }, []);
+  // React.useEffect(() => {
+  //   if (productId && qty) {
+  //     setLocalCartItems((prev) => {
+  //       const existingItem = prev.find((item) => item.product === productId);
+  //       if (existingItem) {
+  //         return prev.map((item) =>
+  //           item.product === productId ? { ...item, qty } : item
+  //         );
+  //       }
+  //       return [...prev, { product: productId, qty }];
+  //     });
+  //   }
+  // }, []);
 
   const tax = 5;
   const promotions = [
@@ -354,8 +386,9 @@ function Page() {
                   setLocalCartItems((prev) =>
                     prev.filter((item) => item.product !== id)
                   );
-                  dispatch(removeFromCart(id))
+                  dispatch(removeFromCart(id));
                 }}
+                itemsBackup={cart.cartItems}
               />
 
               <Summary
