@@ -9,7 +9,9 @@ import authHeader from "../../../utils/misc/auth-header";
 
 export const getCurrentUser = () => ({
   type: GET_CURRENT_USER,
-  payload: JSON.parse(localStorage.getItem("user") || "") || {},
+  payload: localStorage.getItem("user")
+    ? JSON.parse(localStorage.getItem("user")!)
+    : {},
 });
 
 const url =

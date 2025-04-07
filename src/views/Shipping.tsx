@@ -23,7 +23,7 @@ function Shipping() {
   const submitHandler = (e: any) => {
     e.preventDefault();
     dispatch(saveShipping({ address, city, postalCode, country }));
-    navigate("payment");
+    navigate("/payment");
   };
 
   return (

@@ -55,7 +55,9 @@ const Navbar = ({
     }
 
     if (logged) {
-      const user = JSON.parse(localStorage.getItem("user") || "") || {};
+      const userString = localStorage.getItem("user");
+      const user = userString ? JSON.parse(userString) : null;
+
       if (user && user.roles) {
         const storeView = user.roles.includes("ROLE_ADMIN");
         if (storeView) {
@@ -133,7 +135,9 @@ const Navbar = ({
                           : "https://res.cloudinary.com/seva32/image/upload/v1605538134/userWhite_cdsffg.svg"
                       }
                       alt="account"
-                      className={`${profileImage ? "rounded-full" : ""} w-48p h-48p`}
+                      className={`${
+                        profileImage ? "rounded-full" : ""
+                      } w-48p h-48p`}
                     />
                   </Link>
                 </div>

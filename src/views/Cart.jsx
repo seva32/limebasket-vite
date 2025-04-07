@@ -34,9 +34,7 @@ function Header() {
   );
 }
 
-function ProductList({ products, removeFromCartHandler }) {
-  const dispatch = useAppDispatch();
-
+function ProductList({ products, removeFromCartHandler, updateQuantity }) {
   const itemCount = products.reduce(
     (quantity, product) => quantity + +product.qty,
     0
@@ -91,11 +89,9 @@ function ProductList({ products, removeFromCartHandler }) {
                     padding="p-0"
                     noArrow
                     handleClick={() =>
-                      dispatch(
-                        addToCart(item.product, item.qty + 1, "", () => {})
-                      )
+                      updateQuantity(item.product, item.qty + 1)
                     }
-                    disabled={item.qty > item.countInStock - 1}
+                    disabled={item.qty >= item.countInStock}
                   >
                     <strong>+</strong>
                   </Button>
@@ -109,9 +105,7 @@ function ProductList({ products, removeFromCartHandler }) {
                     padding="p-0"
                     noArrow
                     handleClick={() =>
-                      dispatch(
-                        addToCart(item.product, item.qty - 1, "", () => {})
-                      )
+                      updateQuantity(item.product, item.qty - 1)
                     }
                     disabled={item.qty <= 0}
                   >
@@ -141,8 +135,9 @@ function ProductList({ products, removeFromCartHandler }) {
 }
 
 ProductList.propTypes = {
-  products: PropTypes.array.isRequired, // eslint-disable-line
+  products: PropTypes.array.isRequired,
   removeFromCartHandler: PropTypes.func.isRequired,
+  updateQuantity: PropTypes.func.isRequired,
 };
 
 function Summary({
@@ -239,9 +234,15 @@ Summary.defaultProps = {
 };
 
 function Page() {
-  const [loading, setLoading] = React.useState(true); // loader until redux update
   const cart = useAppSelector((state) => state.cart);
-  const { cartItems } = cart;
+  const [localCartItems, setLocalCartItems] = React.useState(() => {
+    if (typeof window !== 'undefined') {
+      const storedCart = localStorage.getItem("localCart");
+      return storedCart ? JSON.parse(storedCart) : cart.cartItems;
+    }
+    return cart.cartItems;
+  });
+  
   const auth = useAppSelector((state) => state.auth);
   const { authenticated } = auth;
   const { id } = useParams();
@@ -257,30 +258,30 @@ function Page() {
 
   React.useEffect(() => {
     window.scrollTo(0, 0);
-  }, [productId, cartItems]);
+  }, [productId]);
 
   React.useEffect(() => {
-    if (productId) {
-      dispatch(
-        addToCart(productId, qty, promoCode, () => {
-          setLoading(false);
-        })
-      );
-    } else {
-      setLoading(false);
+    localStorage.setItem("localCart", JSON.stringify(localCartItems));
+  }, [localCartItems]);
+  
+
+  React.useEffect(() => {
+    setLocalCartItems(cart.cartItems);
+  }, [cart.cartItems]);
+
+  React.useEffect(() => {
+    if (productId && qty) {
+      setLocalCartItems((prev) => {
+        const existingItem = prev.find((item) => item.product === productId);
+        if (existingItem) {
+          return prev.map((item) =>
+            item.product === productId ? { ...item, qty } : item
+          );
+        }
+        return [...prev, { product: productId, qty }];
+      });
     }
-  }, [qty, productId, promoCode, dispatch]);
-
-  const removeFromCartHandler = React.useCallback(
-    (prodId) => {
-      dispatch(removeFromCart(prodId));
-    },
-    [dispatch]
-  );
-
-  const checkoutHandler = React.useCallback(() => {
-    navigate("/shipping");
-  }, [navigate]);
+  }, []);
 
   const tax = 5;
   const promotions = [
@@ -303,7 +304,6 @@ function Page() {
   };
 
   const checkPromoCode = () => {
-    // eslint-disable-next-line no-plusplus
     for (let i = 0; i < promotions.length; i++) {
       if (promoCode === promotions[i].code) {
         setDiscount(parseFloat(promotions[i].discount.replace("%", "")));
@@ -314,10 +314,6 @@ function Page() {
     setPromoCode("");
     alert("Sorry, the Promotional code you entered is not valid!");
   };
-
-  if (loading) {
-    return <Loader />;
-  }
 
   return (
     <>
@@ -343,20 +339,40 @@ function Page() {
             <Header />
           </div>
 
-          {cartItems.length > 0 ? (
+          {localCartItems.length > 0 ? (
             <>
               <ProductList
-                products={cartItems}
-                removeFromCartHandler={removeFromCartHandler}
+                products={localCartItems}
+                updateQuantity={(id, qty) => {
+                  setLocalCartItems((prev) =>
+                    prev.map((item) =>
+                      item.product === id ? { ...item, qty } : item
+                    )
+                  );
+                }}
+                removeFromCartHandler={(id) => {
+                  setLocalCartItems((prev) =>
+                    prev.filter((item) => item.product !== id)
+                  );
+                  dispatch(removeFromCart(id))
+                }}
               />
 
               <Summary
-                products={cartItems}
+                products={localCartItems}
                 discount={discount}
-                tax={cartItems.length > 0 ? tax : 0}
+                tax={localCartItems.length > 0 ? tax : 0}
                 onEnterPromoCode={onEnterPromoCode}
                 checkPromoCode={checkPromoCode}
-                checkoutHandler={checkoutHandler}
+                checkoutHandler={() => {
+                  localCartItems.forEach((item) => {
+                    dispatch(
+                      addToCart(item.product, item.qty, promoCode, () => {})
+                    );
+                  });
+                  localStorage.removeItem("localCart");
+                  navigate("/shipping");
+                }}
               />
             </>
           ) : (

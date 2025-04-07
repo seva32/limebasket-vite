@@ -32,6 +32,7 @@ function Products() {
     message?: string;
     field?: string;
   } | null>(null);
+  const [isLoaded, setIsLoaded] = React.useState(false);
 
   const timeoutRef = React.useRef<number | null>(null);
 
@@ -52,8 +53,14 @@ function Products() {
   } = productDelete;
 
   React.useEffect(() => {
-    if (!products) {
-      dispatch(listProducts());
+    if (!products.length) {
+      (async () => {
+        const data = await dispatch(listProducts());
+        if (data) {
+          setIsLoaded(true);
+          setSuccessMessage(false);
+        }
+      })();
     }
 
     if (errorDelete) {
@@ -158,13 +165,15 @@ function Products() {
     </div>
   );
 
+  
+  if (error) return <div>{error}</div>;
+  
   if (loading) {
     return <div>Loading...</div>;
   }
 
   return (
     <div>
-      {error && <div>{error}</div>}
       {successMessage && deletedProduct && (
         <Alert
           title="Product Deleted!"

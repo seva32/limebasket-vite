@@ -9,13 +9,12 @@ import { ButtonCell } from "../../common";
 
 function Orders() {
   const [workingRow, setWorkingRow] = React.useState(null);
+  const [_, setLoaded] = React.useState(false);
   const dispatch = useAppDispatch();
 
-  const orderList: { loading: boolean; orders: any; error: string } =
-    useAppSelector((state) => state.orderList);
-  const loadingOrders = orderList.loading;
-  const orders = orderList.orders;
-  const errorOrders = orderList.error;
+  const loadingOrders = useAppSelector((state) => state.orderList.loading);
+  const orders = useAppSelector((state) => state.orderList.orders);
+  const errorOrders = useAppSelector((state) => state.orderList.error);
 
   const orderDelete = useAppSelector((state) => state.orderDelete);
   const {
@@ -26,12 +25,18 @@ function Orders() {
   } = orderDelete;
 
   useEffect(() => {
-    dispatch(listOrders());
+    (async () => {
+      const data = await dispatch(listOrders());
+      if (data) {
+        setLoaded(true);
+      }
+    })();
   }, [dispatch]);
 
   useEffect(() => {
     if (successDelete && deletedOrder) {
       dispatch(listOrders());
+      alert("Order deleted successfully");
     }
     if (errorDelete) {
       alert("error deleting order");

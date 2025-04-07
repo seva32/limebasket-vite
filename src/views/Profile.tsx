@@ -17,7 +17,8 @@ function Profile() {
   const dispatch = useDispatch();
   const users = useAppSelector((state) => state.users);
 
-  const user = JSON.parse(localStorage.getItem("user") || "") || {};
+  const userString = localStorage.getItem("user");
+  const user = userString ? JSON.parse(userString) : null;
 
   React.useEffect(() => {
     dispatch(getUserData());

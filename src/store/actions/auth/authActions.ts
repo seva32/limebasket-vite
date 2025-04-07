@@ -80,7 +80,9 @@ export const signup =
 
 export const signout =
   (callback: () => void) => async (dispatch: Dispatch<AnyAction>) => {
-    const user = JSON.parse(localStorage.getItem("user") || "");
+    const userString = localStorage.getItem("user");
+    const user = userString ? JSON.parse(userString) : null;
+
     if (user) {
       try {
         await instance.post(
