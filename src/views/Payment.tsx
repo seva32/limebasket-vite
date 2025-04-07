@@ -11,7 +11,7 @@ function Payment() {
 
   React.useEffect(() => {
     dispatch(savePayment({ paymentMethod }));
-    navigate("place-order");
+    navigate("/place-order");
   });
 
   return <Loader />;

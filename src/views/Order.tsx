@@ -1,5 +1,3 @@
-/* eslint-disable react/jsx-one-expression-per-line */
-/* eslint-disable no-nested-ternary */
 import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
@@ -16,6 +14,7 @@ import { Head, Loader, Policies, Navbar } from "../common";
 function Order() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [loaded, setLoaded] = React.useState(false);
   const orderDetails: { order: any; loading: boolean; error: string } =
     useAppSelector((state) => state.orderDetails);
   const order = orderDetails.order;
@@ -36,7 +35,7 @@ function Order() {
   }, [order, successPay, errorPay, id]);
 
   React.useEffect(() => {
-    if (!order.isPaid && successPay) {
+    if (order && !order.isPaid && successPay) {
       dispatch({ type: ORDER_PAY_RESET });
       if (auth) {
         navigate("/profile");
@@ -44,12 +43,22 @@ function Order() {
         navigate("/");
       }
     } else {
-      dispatch(detailsOrder(id));
+      (async () => {
+        if (!order._id || successPay || order._id !== id) {
+          const orderData = await dispatch(detailsOrder(id));
+          if (orderData) {
+            setLoaded(true);
+          }
+        } else if (order._id === id) {
+          setLoaded(true);
+        }
+      })();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [successPay]);
 
   const handleSuccessPayment = (paymentResult: any) => {
+    setLoaded(false);
     const paymentData = {
       paymentMethod: paymentResult,
       payerId: paymentResult.payer.payer_id,
@@ -57,11 +66,21 @@ function Order() {
       paymentId: paymentResult.paymentId ? paymentResult.paymentId : null,
     };
 
-    dispatch(payOrder(order, paymentData));
+    (async () => {
+      const data = await dispatch(payOrder(order, paymentData));
+      if (data) {
+        setLoaded(false);
+        const orderData = await dispatch(detailsOrder(id));
+        if (orderData) {
+          alert("Payment successful!");
+          setLoaded(true);
+        }
+      }
+    })();
   };
 
   if (errorPay) {
-    // console.log(errorPay);
+    console.log(errorPay);
   }
 
   const onButtonReady = (m: any) => {
@@ -121,7 +140,10 @@ function Order() {
             {/* customer info */}
             <div className="w-full flex flex-col md:flex-row">
               {/* customer */}
-              <div className="w-full md:w-2/3 flex h-150p">
+              <div
+                style={{ maxHeight: "150px" }}
+                className="w-full md:w-2/3 flex h-150p"
+              >
                 <div className="w-1/2 h-full flex flex-col bg-honeydew rounded-lg mx-2">
                   {panel("Placed by", order.user.nickname)}
                   <hr className="text-aero pb-1" />
@@ -134,9 +156,12 @@ function Order() {
                 </div>
               </div>
               {/* pay btn */}
-              <div className="w-2/3 md:w-1/3 h-150p bg-honeydew flex justify-center items-center mx-auto mt-4 md:mt-0 md:mx-2 overflow-hidden rounded-lg">
+              <div
+                style={{ overflowY: "scroll", minHeight: "40vh" }}
+                className="w-2/3 md:w-1/3 bg-honeydew flex justify-center items-center mx-auto mt-4 md:mt-0 md:mx-2 rounded-lg"
+              >
                 {loadingPay && <div>Finishing Payment...</div>}
-                {!order.isPaid && (
+                {!order.isPaid && !loadingPay && (
                   <PaypalButton
                     amount={order.totalPrice.toFixed(2)}
                     onButtonReady={onButtonReady}

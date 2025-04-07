@@ -45,7 +45,9 @@ function Prod() {
 
   React.useEffect(() => {
     if (auth) {
-      const user = JSON.parse(localStorage.getItem("user") || "") || {};
+      const userString = localStorage.getItem("user");
+      const user = userString ? JSON.parse(userString) : {};
+
       if (user.nickname) {
         setNickname({ nickname: user.nickname, image: user.image });
       }

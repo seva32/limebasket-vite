@@ -45,7 +45,7 @@ export default function appRouter() {
             path="/reset-password/:token/:email"
             element={<ChangePassword />}
           />
-          <Route path="/payment" element={<Payment />} />
+          <Route path="/payment/*" element={<Payment />} />
           <Route path="/products/:id" element={<Products />} />
           <Route path="/product/:id" element={<Product />} />
           <Route path="/cart" element={<Cart />} />
@@ -53,6 +53,7 @@ export default function appRouter() {
           <Route path="/order/:id" element={<Order />} />
           <Route path="/place-order" element={<PlaceOrder />} />
           <Route path="/shipping" element={<Shipping />} />
+          <Route path="/shipping/payment" element={<Shipping />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="home" element={<Navigate to="/" replace />} />
           <Route path="*" element={<NotFound />} />

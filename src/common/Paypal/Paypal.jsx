@@ -5,12 +5,13 @@
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import axios from "axios";
+import authHeader from "../../utils/misc/auth-header";
 
-const serverURL = process.env.VITE_SERVER_URL || 'localhost:4939';
+const serverURL = process.env.VITE_SERVER_URL || "localhost:4939";
 const baseURL =
   process.env.NODE_ENV !== "development"
-    ? `https://${serverURL}`
-    : `http://${serverURL}`;
+    ? `https://${serverURL}/lime-api`
+    : `http://${serverURL}/lime-api`;
 const clientId = process.env.VITE_PAYPAL_CLIENT;
 
 const PaypalButton = ({
@@ -41,31 +42,28 @@ const PaypalButton = ({
 
   useEffect(() => {
     let isMounted = true;
-    if (process.env.WEBPACK) {
-      const authHeader = require("../../utils/misc/auth-header").default;
-      const defaultOptions = {
-        headers: authHeader(),
-      };
-      axiosinstance.current = axios.create(defaultOptions);
+    const defaultOptions = {
+      headers: authHeader(),
+    };
+    axiosinstance.current = axios.create(defaultOptions);
 
-      // get access token from server
-      if (!sdkReady) {
-        // here check for unmounted component
-        axiosinstance.current
-          .get(`${baseURL}/payment/create-access-token`)
-          .then(({ data: { data } }) => data.client_token)
-          .then((token) => {
-            if (isMounted) {
-              addPaypalSdk(token);
-            }
-          })
-          .catch((e) => {
-            console.log("Error on paypal sdk load. ", e.message);
-          });
-      }
+    // get access token from server
+    if (!sdkReady) {
+      // here check for unmounted component
+      axiosinstance.current
+        .get(`${baseURL}/payment/create-access-token`)
+        .then(({ data: { data } }) => data.client_token)
+        .then((token) => {
+          if (isMounted) {
+            addPaypalSdk(token);
+          }
+        })
+        .catch((e) => {
+          console.log("Error on paypal sdk load. ", e.message);
+        });
     }
 
-    if (process.env.WEBPACK && sdkReady) {
+    if (sdkReady) {
       onButtonReady({ message: "button ready" });
 
       windowPaypal.current = window.paypal;
@@ -74,8 +72,6 @@ const PaypalButton = ({
         .Buttons({
           commit: false,
           createOrder(data, actions) {
-            // This function sets up the details of the transaction,
-            // including the amount and line item details
             return actions.order.create({
               purchase_units: [
                 {
@@ -88,9 +84,7 @@ const PaypalButton = ({
           },
           onCancel(data) {
             onCancelPay(data);
-            // Show a cancel page, or return to cart
           },
-          // aqui paypal recibe la order solo del cliente, no puedo guardarla en db
           onApprove(data, actions) {
             // data:
             // billingToken: null
