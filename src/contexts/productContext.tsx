@@ -1,5 +1,12 @@
 /* eslint-disable react-refresh/only-export-components */
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+  useMemo,
+} from "react";
 import { useLocation } from "react-router-dom";
 import { IProduct } from "../interfaces/IProduct";
 import axios from "axios";
@@ -18,6 +25,7 @@ interface ProductsContextType {
   setSearchKeyword: React.Dispatch<React.SetStateAction<string>>;
   sortOrder: string;
   setSortOrder: React.Dispatch<React.SetStateAction<string>>;
+  refreshProducts: () => void;
 }
 
 const ProductsContext = createContext<ProductsContextType | undefined>(
@@ -34,9 +42,9 @@ const fetchProducts = async ({
   sortOrder?: string;
 }): Promise<{ data: IProduct[] }> => {
   return axios.get(
-    `${url}/shop/products?category=${
-      category === "all" ? "" : category
-    }&searchKeyword=${searchKeyword || ""}&sortOrder=${sortOrder || ""}`,
+    `${url}/shop/products?category=${category || ""}&searchKeyword=${
+      searchKeyword || ""
+    }&sortOrder=${sortOrder || ""}`,
     {
       headers: authHeader(),
     }
@@ -53,11 +61,14 @@ export const ProductsProvider: React.FC<{ children: React.ReactNode }> = ({
   const [searchKeyword, setSearchKeyword] = useState("");
   const [sortOrder, setSortOrder] = useState("");
 
-  useEffect(() => {
-    const category = location.pathname.split("/")[2] || "all";
+  const category = useMemo(() => {
+    const path = location.pathname.split("/")[2];
+    return ["all", "store"].includes(path) ? "" : path;
+  }, [location.pathname]);
+  
+  const fetchAndSetProducts = useCallback(() => {
     setLoading(true);
     setError(null);
-
     fetchProducts({ category, searchKeyword, sortOrder })
       .then((resp) => {
         setProducts(resp.data);
@@ -67,7 +78,15 @@ export const ProductsProvider: React.FC<{ children: React.ReactNode }> = ({
         setError("Failed to fetch products");
         setLoading(false);
       });
-  }, [location, searchKeyword, sortOrder]);
+  }, [category, searchKeyword, sortOrder]);
+
+  useEffect(() => {
+    fetchAndSetProducts();
+  }, [fetchAndSetProducts]);
+
+  const refreshProducts = () => {
+    fetchAndSetProducts();
+  };
 
   const value = {
     products,
@@ -77,6 +96,7 @@ export const ProductsProvider: React.FC<{ children: React.ReactNode }> = ({
     setSearchKeyword,
     sortOrder,
     setSortOrder,
+    refreshProducts,
   };
 
   return (
