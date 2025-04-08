@@ -1,16 +1,16 @@
 /* eslint-disable no-nested-ternary */
 import React from "react";
-import { useAppDispatch, useAppSelector } from "../store/hooks";
+import { useAppSelector } from "../store/hooks";
 import { Link } from "react-router-dom";
 import classnames from "classnames";
 import { Card } from "lime";
 import { useParams, useLocation } from "react-router-dom";
 
-import { listProducts } from "../store/actions";
 import useSticky from "../utils/hooks/useSticky";
 import useMediaQuery from "../utils/hooks/useMediaQuery";
 import randomKey from "../utils/misc/randomKey";
-import { PRODUCT_SEARCH_KEY_RESET } from "../store/actions/shop/shopActionTypes/productActionTypes";
+import { useProducts } from "../contexts/productContext";
+import { IProduct } from "../interfaces/IProduct";
 
 import {
   Head,
@@ -29,31 +29,26 @@ const url =
     : "https://lime-api.sfantini.us/lime-api";
 
 function Products() {
+  const {
+    products,
+    loading,
+    error,
+    searchKeyword,
+    setSortOrder,
+    setSearchKeyword,
+  } = useProducts();
   const { id } = useParams();
-  const [category, setCategory] = React.useState(id);
   const location = useLocation();
-  const [products, setProducts] = React.useState();
 
   const { isPortrait } = useMediaQuery();
   const [showSearchModal, setShowSearch] = React.useState(false);
   const { element, isSticky } = useSticky();
 
-  const dispatch = useAppDispatch();
-
   const auth = useAppSelector((state) => state.auth);
   const { authenticated } = auth;
-  const { loading, error } = useAppSelector((state) => state.productList);
-
-  const productSearchKey = useAppSelector((state) => state.productSearchKey);
-  const searchKeyword = productSearchKey.key;
 
   React.useEffect(() => {
-    const value = id !== "all" ? id : "";
-    setCategory(value);
-  }, [id]);
-
-  React.useEffect(() => {
-    const hash = location.hash; // eslint-disable-line
+    const hash = location.hash;
     if (hash && document.getElementById(hash.substr(1))) {
       document
         .getElementById(hash.substr(1))
@@ -61,21 +56,8 @@ function Products() {
     }
   }, [location.hash]);
 
-  React.useEffect(() => {
-    (async () => {
-      try {
-        const products = await dispatch(
-          listProducts(category !== "all" ? category : "", "", "")
-        );
-        setProducts(products);
-      } catch {
-        /* empty */
-      }
-    })();
-  }, [category, searchKeyword, dispatch]);
-
   const sortHandler = (value: string) => {
-    dispatch(listProducts(category, searchKeyword, value));
+    setSortOrder(value);
   };
 
   const selectContent = [
@@ -91,6 +73,10 @@ function Products() {
   const clearModal = () => {
     setShowSearch(false);
   };
+
+  if (!products) {
+    return null;
+  }
 
   return (
     <div className="w-full h-full relative mb-24r z-0" id="top">
@@ -197,7 +183,7 @@ function Products() {
                   <button
                     type="button"
                     className="text-red pl-4"
-                    onClick={() => dispatch({ type: PRODUCT_SEARCH_KEY_RESET })}
+                    onClick={() => setSearchKeyword("")}
                   >
                     (X)
                   </button>
@@ -221,9 +207,11 @@ function Products() {
             id="list"
           >
             {products &&
-              products.map((p: any) => (
+              products.map((p: IProduct) => (
                 <Card
-                  imgSrc={`${p.image?.charAt?.(0) === '/' ? url : ''}${p.image}`}
+                  imgSrc={`${p.image?.charAt?.(0) === "/" ? url : ""}${
+                    p.image
+                  }`}
                   brandLogo="https://res.cloudinary.com/seva32/image/upload/v1604425921/logo_rblope.svg"
                   linkTo={`/product/${p._id}`}
                   productId={p._id}
@@ -243,10 +231,3 @@ function Products() {
 }
 
 export default Products;
-
-/* <Dropdown
-  title="Sort by"
-  itemsLocation="items-end"
-  content={selectContent}
-  sortHandler={sortHandler}
-/>; */

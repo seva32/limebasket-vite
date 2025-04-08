@@ -1,46 +1,27 @@
-/* eslint-disable @typescript-eslint/no-empty-function */
 import React, { FormEvent } from "react";
 
-// import { useAppDispatch as useDispatch} from "../store/hooks";
-// import { setSearchProductKey } from '../store/actions';
 import useScape from "../utils/hooks/useScape";
+import { useProducts } from "../contexts/productContext";
 
 interface InputProps {
   w: string;
   closeModal?: () => void;
-  navigate?: () => void;
-  blockAction?: boolean;
 }
 
 /**
  * input element
  * @param {string} w width, ex: w-full, w-12
  * @param {function} closeModal cb when needed a close action after submit
- * @param {function} onSearchKey provided by redux
- * @param {function} navigate cb to navigate page
- * @param {boolean} blockAction prevent change in redux (excludes onSearchKey under submition)
- * true = no redux action fires
  */
 
-function Input({
-  w,
-  closeModal = () => {},
-  navigate,
-  blockAction = false,
-}: InputProps): JSX.Element {
-  const [searchKeyword, setSearchKeyword] = React.useState("");
-  // const dispatch = useDispatch();
+function Input({ w, closeModal = () => {} }: InputProps): React.ReactElement {
+  const { searchKeyword, setSearchKeyword } = useProducts();
 
   useScape(closeModal);
 
   const submitHandler = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // if (!blockAction) {
-    //   dispatch(setSearchProductKey(searchKeyword))
-    // }
-    setSearchKeyword("");
     closeModal();
-    navigate?.();
   };
 
   return (

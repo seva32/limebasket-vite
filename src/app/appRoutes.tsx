@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import loadable from "@loadable/component";
 import { ErrorBoundary } from "../common/ErrorBoundary";
+import { ProductsProvider } from "../contexts/productContext";
 
 import { ScrollToTop, Layout } from "../common";
 
@@ -46,7 +47,14 @@ export default function appRouter() {
             element={<ChangePassword />}
           />
           <Route path="/payment/*" element={<Payment />} />
-          <Route path="/products/:id" element={<Products />} />
+          <Route
+            path="/products/:id"
+            element={
+              <ProductsProvider>
+                <Products />
+              </ProductsProvider>
+            }
+          />
           <Route path="/product/:id" element={<Product />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/cart/:id" element={<Cart />} />
